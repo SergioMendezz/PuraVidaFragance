@@ -1,0 +1,20 @@
+﻿-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE EditarNota
+    @Id       UNIQUEIDENTIFIER,
+    @Nombre   VARCHAR(50),
+    @ColorHex VARCHAR(7)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION
+        UPDATE Notas
+        SET Nombre   = @Nombre,
+            ColorHex = @ColorHex
+        WHERE Id = @Id;
+        SELECT @Id;
+    COMMIT TRANSACTION
+END

@@ -1,7 +1,7 @@
 ﻿using Abstracciones.Interfaces.API;
 using Abstracciones.Interfaces.Flujo;
 using Abstracciones.Modelos;
-//using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -20,7 +20,7 @@ namespace API.Controllers
         }
 
         [HttpGet("perfume/{IdPerfume}")]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         public async Task<IActionResult> ObtenerPorPerfume([FromRoute] Guid IdPerfume)
         {
             var resultado = await _varianteFlujo.ObtenerPorPerfume(IdPerfume);
@@ -30,7 +30,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Agregar([FromBody] VarianteRequest variante)
         {
             var resultado = await _varianteFlujo.Agregar(variante);
@@ -38,7 +38,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{Id}")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar([FromRoute] Guid Id, [FromBody] VarianteRequest variante)
         {
             var resultado = await _varianteFlujo.Editar(Id, variante);
@@ -46,7 +46,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{Id}")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Eliminar([FromRoute] Guid Id)
         {
             await _varianteFlujo.Eliminar(Id);

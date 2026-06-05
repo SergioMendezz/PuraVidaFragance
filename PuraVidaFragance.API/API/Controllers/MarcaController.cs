@@ -2,6 +2,7 @@
 using Abstracciones.Interfaces.Flujo;
 using Abstracciones.Modelos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -22,6 +23,7 @@ namespace API.Controllers
         #region Operaciones
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Obtener()
         {
             var resultado = await _marcaFlujo.Obtener();
@@ -31,6 +33,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{Id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Obtener([FromRoute] Guid Id)
         {
             var resultado = await _marcaFlujo.Obtener(Id);
@@ -40,6 +43,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Agregar([FromBody] MarcaRequest marca)
         {
             var resultado = await _marcaFlujo.Agregar(marca);
@@ -47,6 +51,7 @@ namespace API.Controllers
         }
 
         [HttpPut("{Id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar([FromRoute] Guid Id, [FromBody] MarcaRequest marca)
         {
             if (!await VerificarExiste(Id))
@@ -56,6 +61,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{Id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Eliminar([FromRoute] Guid Id)
         {
             if (!await VerificarExiste(Id))

@@ -83,5 +83,12 @@
     <Build Include="dbo\Stored Procedures\EliminarMarca.sql" />
     <Build Include="dbo\Stored Procedures\EditarMarca.sql" />
     <Build Include="dbo\Stored Procedures\AgregarMarca.sql" />
+    <Build Include="dbo\Stored Procedures\ObtenerNotas.sql" />
+    <Build Include="dbo\Stored Procedures\ObtenerNota.sql" />
+    <Build Include="dbo\Stored Procedures\EliminarNotaDePerfume.sql" />
+    <Build Include="dbo\Stored Procedures\EliminarNota.sql" />
+    <Build Include="dbo\Stored Procedures\EditarNota.sql" />
+    <Build Include="dbo\Stored Procedures\AgregarNotaAPerfume.sql" />
+    <Build Include="dbo\Stored Procedures\AgregarNota.sql" />
   </ItemGroup>
 </Project>

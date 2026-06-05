@@ -1,0 +1,17 @@
+﻿-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE EliminarNotaDePerfume
+    @IdPerfume UNIQUEIDENTIFIER,
+    @IdNota    UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION
+        DELETE FROM NotasPerfume
+        WHERE IdPerfume = @IdPerfume AND IdNota = @IdNota;
+        SELECT @IdNota;
+    COMMIT TRANSACTION
+END

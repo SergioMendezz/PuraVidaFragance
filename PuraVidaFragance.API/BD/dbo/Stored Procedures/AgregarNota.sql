@@ -1,0 +1,18 @@
+﻿-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE AgregarNota
+    @Id       UNIQUEIDENTIFIER,
+    @Nombre   VARCHAR(50),
+    @ColorHex VARCHAR(7)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION
+        INSERT INTO Notas (Id, Nombre, ColorHex)
+        VALUES (@Id, @Nombre, @ColorHex);
+        SELECT @Id;
+    COMMIT TRANSACTION
+END
