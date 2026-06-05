@@ -78,5 +78,10 @@
     <Build Include="dbo\Stored Procedures\EditarPerfume.sql" />
     <Build Include="dbo\Stored Procedures\AgregarVariante.sql" />
     <Build Include="dbo\Stored Procedures\AgregarPerfume.sql" />
+    <Build Include="dbo\Stored Procedures\ObtenerMarcas.sql" />
+    <Build Include="dbo\Stored Procedures\ObtenerMarca.sql" />
+    <Build Include="dbo\Stored Procedures\EliminarMarca.sql" />
+    <Build Include="dbo\Stored Procedures\EditarMarca.sql" />
+    <Build Include="dbo\Stored Procedures\AgregarMarca.sql" />
   </ItemGroup>
 </Project>

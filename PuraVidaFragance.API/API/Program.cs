@@ -18,9 +18,11 @@ builder.Services.AddScoped<IRepositorioDapper, RepositorioDapper>();
 
 builder.Services.AddScoped<IPerfumeDA, PerfumeDA>();
 builder.Services.AddScoped<IVarianteDA, VarianteDA>();
+builder.Services.AddScoped<IMarcaDA, MarcaDA>();
 
 builder.Services.AddScoped<IPerfumeFlujo, PerfumeFlujo>();
 builder.Services.AddScoped<IVarianteFlujo, VarianteFlujo>();
+builder.Services.AddScoped<IMarcaFlujo, MarcaFlujo>();
 
 var app = builder.Build();
 
