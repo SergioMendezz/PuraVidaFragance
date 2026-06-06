@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import FloatingButtons from "../components/FloatingButtons";
 import PerfumeModal from "../components/PerfumeModal";
 import { getPerfumes, getMarcas } from "../services/api";
+import logo from "../assets/logo.png";
 
 export default function Tienda() {
   const catalogoRef = useRef(null);
@@ -24,13 +25,10 @@ export default function Tienda() {
       .finally(() => setLoading(false));
   }, []);
 
-  const scrollCatalogo = () => {
-    catalogoRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollCatalogo = () => catalogoRef.current?.scrollIntoView({ behavior: "smooth" });
 
   const todasNotas = [...new Map(
-    perfumes.flatMap(p => p.notas ?? [])
-      .map(n => [n.nombre, n])
+    perfumes.flatMap(p => p.notas ?? []).map(n => [n.nombre, n])
   ).values()].sort((a, b) => b.intensidad - a.intensidad);
 
   const filtrados = perfumes
@@ -49,14 +47,15 @@ export default function Tienda() {
     });
 
   const getPrecioMin = (p) => {
-    const variantes = p.variantes ?? [];
-    if (!variantes.length) return null;
-    return variantes.find(v => v.tipo === "Completo") ?? variantes[0];
+    const v = p.variantes ?? [];
+    return v.find(x => x.tipo === "Completo") ?? v[0] ?? null;
   };
 
-  const getNotasPrincipales = (p) => {
-    return [...(p.notas ?? [])].sort((a, b) => b.intensidad - a.intensidad).slice(0, 4);
-  };
+  const getNotasPrincipales = (p) =>
+    [...(p.notas ?? [])].sort((a, b) => b.intensidad - a.intensidad).slice(0, 4);
+
+  const sinStock = (p) =>
+    (p.variantes ?? []).length > 0 && (p.variantes ?? []).every(v => v.stock === 0);
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -64,10 +63,11 @@ export default function Tienda() {
 
       {/* Hero */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-6">
-        <p className="text-[10px] tracking-[6px] uppercase text-gray-500 mb-4">Fragance</p>
-        <h1 className="text-7xl md:text-9xl font-semibold text-[#1B1B1B] tracking-widest leading-none mb-6">
-          PURA<br/>VIDA
-        </h1>
+        <img
+          src={logo}
+          alt="Pura Vida Fragance"
+          className="w-72 md:w-[420px] mb-8 object-contain"
+        />
         <div className="w-12 h-px bg-[#1B1B1B] mb-6" />
         <p className="text-[11px] tracking-[4px] uppercase text-gray-500 mb-12">
           Fragancias selectas · Costa Rica
@@ -83,7 +83,10 @@ export default function Tienda() {
       <section ref={catalogoRef} className="max-w-6xl mx-auto px-6 pb-24">
         <div className="border-t border-[#EBEBEB] pt-16 mb-10">
           <p className="text-[10px] tracking-[5px] uppercase text-gray-500 mb-2">Colección</p>
-          <h2 className="text-3xl font-light text-[#1B1B1B] tracking-wide">Catálogo</h2>
+          <h2 className="text-4xl font-light text-[#1B1B1B] tracking-wide"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Catálogo
+          </h2>
         </div>
 
         {/* Filtros */}
@@ -111,16 +114,16 @@ export default function Tienda() {
           </select>
         </div>
 
-        {/* Chips de notas */}
+        {/* Chips */}
         {todasNotas.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-8">
             <button onClick={() => setNotaFiltro("")}
-              className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${!notaFiltro ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"}`}>
+              className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${!notaFiltro ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
               Todas
             </button>
             {todasNotas.slice(0, 8).map(n => (
               <button key={n.nombre} onClick={() => setNotaFiltro(n.nombre === notaFiltro ? "" : n.nombre)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${notaFiltro === n.nombre ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B] hover:text-[#1B1B1B]"}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${notaFiltro === n.nombre ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: n.colorHex }} />
                 {n.nombre}
               </button>
@@ -141,7 +144,7 @@ export default function Tienda() {
           </div>
         ) : filtrados.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-sm text-gray-500 tracking-wide">No se encontraron perfumes</p>
+            <p className="text-sm text-gray-500">No se encontraron perfumes</p>
             <button onClick={() => { setSearch(""); setMarcaFiltro(""); setNotaFiltro(""); }}
               className="mt-4 text-[11px] tracking-[2px] uppercase text-[#1B1B1B] underline">
               Limpiar filtros
@@ -153,10 +156,18 @@ export default function Tienda() {
               const varPrincipal = getPrecioMin(p);
               const notas        = getNotasPrincipales(p);
               const tieneDecant  = (p.variantes ?? []).some(v => v.tipo === "Decant");
+              const agotado      = sinStock(p);
 
               return (
-                <div key={p.id} className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"
-                  onClick={() => setSelected(p)}>
+                <div key={p.id}
+                  className={`bg-white p-5 relative transition-colors group ${agotado ? "opacity-70 cursor-default" : "cursor-pointer hover:bg-[#FAFAFA]"}`}
+                  onClick={() => !agotado && setSelected(p)}>
+
+                  {agotado && (
+                    <div className="absolute top-0 left-0 right-0 z-10 bg-[#1B1B1B]/80 text-white text-[9px] tracking-widest uppercase text-center py-1.5">
+                      Sin stock temporalmente
+                    </div>
+                  )}
 
                   <div className="flex items-start justify-between mb-4">
                     <span className="text-[11px] tracking-[2px] uppercase text-[#666] font-medium">{p.genero}</span>
@@ -184,19 +195,24 @@ export default function Tienda() {
                   )}
 
                   <p className="text-[11px] tracking-[3px] uppercase text-[#666] mb-1">{p.marca}</p>
-                  <p className="text-sm font-medium text-[#1B1B1B] mb-3 leading-tight">{p.nombre}</p>
+                  <p className="mb-3 leading-tight text-[#1B1B1B]"
+                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontWeight: 400 }}>
+                    {p.nombre}
+                  </p>
 
-                  {varPrincipal && (
+                  {varPrincipal && !agotado && (
                     <p className="text-base font-light text-[#1B1B1B] mb-3">
                       ₡{Number(varPrincipal.precio).toLocaleString()}
                     </p>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
-                      Ver detalles →
-                    </span>
-                    {tieneDecant && (
+                    {!agotado && (
+                      <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
+                        Ver detalles →
+                      </span>
+                    )}
+                    {tieneDecant && !agotado && (
                       <span className="text-[9px] tracking-[1px] uppercase border border-[#C0C0C0] px-2 py-1 text-[#555] font-medium">
                         Decant disponible
                       </span>
