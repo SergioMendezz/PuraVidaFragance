@@ -12,5 +12,6 @@ export default function AdminLayout() {
         <Outlet context={{ onMenuClick: () => setSidebarOpen(true) }} />
       </div>
     </div>
+    
   );
 }
