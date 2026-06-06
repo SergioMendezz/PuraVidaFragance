@@ -32,9 +32,9 @@ export default function Perfumes() {
   const load = async () => {
     try {
       const [pRes, mRes, nRes] = await Promise.all([getPerfumes(), getMarcas(), getNotas()]);
-      setPerfumes(pRes.data ?? []);
-      setMarcas(mRes.data ?? []);
-      setNotasCat(nRes.data ?? []);
+      setPerfumes(Array.isArray(pRes.data) ? pRes.data : []);
+      setMarcas(Array.isArray(mRes.data) ? mRes.data : []);
+      setNotasCat(Array.isArray(nRes.data) ? nRes.data : []);
     } catch { }
     finally { setLoading(false); }
   };
