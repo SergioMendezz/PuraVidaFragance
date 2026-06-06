@@ -32,20 +32,20 @@ const todasNotas = [...new Map(
     .map(n => [n.nombre, n])
 ).values()].sort((a, b) => b.intensidad - a.intensidad);
 
-  const filtrados = perfumes
-    .filter(p => {
-      const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                          p.marca?.toLowerCase().includes(search.toLowerCase());
-      const matchMarca  = !marcaFiltro || p.marca === marcaFiltro;
-      const matchNota   = !notaFiltro  || (p.notas ?? []).some(n => n.nombre === notaFiltro);
-      return matchSearch && matchMarca && matchNota;
-    })
-    .sort((a, b) => {
-      if (!notaFiltro) return 0;
-      const intA = (a.notas ?? []).find(n => n.nombre === notaFiltro)?.intensidad ?? 0;
-      const intB = (b.notas ?? []).find(n => n.nombre === notaFiltro)?.intensidad ?? 0;
-      return intB - intA;
-    });
+  const filtrados = (Array.isArray(perfumes) ? perfumes : [])
+  .filter(p => {
+    const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                        p.marca?.toLowerCase().includes(search.toLowerCase());
+    const matchMarca  = !marcaFiltro || p.marca === marcaFiltro;
+    const matchNota   = !notaFiltro  || (Array.isArray(p.notas) ? p.notas : []).some(n => n.nombre === notaFiltro);
+    return matchSearch && matchMarca && matchNota;
+  })
+  .sort((a, b) => {
+    if (!notaFiltro) return 0;
+    const intA = (Array.isArray(a.notas) ? a.notas : []).find(n => n.nombre === notaFiltro)?.intensidad ?? 0;
+    const intB = (Array.isArray(b.notas) ? b.notas : []).find(n => n.nombre === notaFiltro)?.intensidad ?? 0;
+    return intB - intA;
+  });
 
   const getPrecioMin = (p) => {
     const v = p.variantes ?? [];
