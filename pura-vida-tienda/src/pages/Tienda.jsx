@@ -27,9 +27,10 @@ export default function Tienda() {
 
   const scrollCatalogo = () => catalogoRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  const todasNotas = [...new Map(
-    perfumes.flatMap(p => p.notas ?? []).map(n => [n.nombre, n])
-  ).values()].sort((a, b) => b.intensidad - a.intensidad);
+const todasNotas = [...new Map(
+  (Array.isArray(perfumes) ? perfumes : []).flatMap(p => Array.isArray(p.notas) ? p.notas : [])
+    .map(n => [n.nombre, n])
+).values()].sort((a, b) => b.intensidad - a.intensidad);
 
   const filtrados = perfumes
     .filter(p => {
