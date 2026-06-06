@@ -22,9 +22,10 @@ export default function Variantes() {
 
   useEffect(() => {
     getPerfumes().then(r => {
-      setPerfumes(r.data ?? []);
-      if (r.data?.length) setSelected(r.data[0].id);
-    }).catch(() => {});
+    const data = Array.isArray(r.data) ? r.data : [];
+    setPerfumes(data);
+    if (data.length) setSelected(data[0].id);
+  }).catch(() => {});
   }, []);
 
   useEffect(() => {

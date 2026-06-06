@@ -21,7 +21,7 @@ export default function Marcas() {
   const load = async () => {
     try {
       const res = await getMarcas();
-      setMarcas(res.data ?? []);
+      setMarcas(Array.isArray(res.data) ? res.data : []);
     } catch { setMarcas([]); }
     finally { setLoading(false); }
   };

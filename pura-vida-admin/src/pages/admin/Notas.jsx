@@ -19,7 +19,7 @@ export default function Notas() {
   const [error, setError]     = useState("");
 
   const load = async () => {
-    try { const res = await getNotas(); setNotas(res.data ?? []); }
+    try { const res = await getNotas(); setNotas(Array.isArray(res.data) ? res.data : []); }
     catch { setNotas([]); }
     finally { setLoading(false); }
   };
