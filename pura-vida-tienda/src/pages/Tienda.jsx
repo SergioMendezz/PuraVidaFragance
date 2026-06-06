@@ -15,15 +15,15 @@ export default function Tienda() {
   const [notaFiltro, setNotaFiltro]   = useState("");
   const [selected, setSelected]       = useState(null);
 
-  useEffect(() => {
-    Promise.all([getPerfumes(), getMarcas()])
-      .then(([pRes, mRes]) => {
-        setPerfumes(pRes.data ?? []);
-        setMarcas(mRes.data ?? []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+ useEffect(() => {
+  Promise.all([getPerfumes(), getMarcas()])
+    .then(([pRes, mRes]) => {
+      setPerfumes(Array.isArray(pRes.data) ? pRes.data : []);
+      setMarcas(Array.isArray(mRes.data) ? mRes.data : []);
+    })
+    .catch(() => {})
+    .finally(() => setLoading(false));
+}, []);
 
   const scrollCatalogo = () => catalogoRef.current?.scrollIntoView({ behavior: "smooth" });
 
@@ -48,15 +48,18 @@ const todasNotas = [...new Map(
   });
 
   const getPrecioMin = (p) => {
-    const v = p.variantes ?? [];
-    return v.find(x => x.tipo === "Completo") ?? v[0] ?? null;
+  const v = Array.isArray(p.variantes) ? p.variantes : [];
+  return v.find(x => x.tipo === "Completo") ?? v[0] ?? null;
   };
 
   const getNotasPrincipales = (p) =>
-    [...(p.notas ?? [])].sort((a, b) => b.intensidad - a.intensidad).slice(0, 4);
+    [...(Array.isArray(p.notas) ? p.notas : [])].sort((a, b) => b.intensidad - a.intensidad).slice(0, 4);
 
-  const sinStock = (p) =>
-    (p.variantes ?? []).length > 0 && (p.variantes ?? []).every(v => v.stock === 0);
+
+  const sinStock = (p) => {
+  const v = Array.isArray(p.variantes) ? p.variantes : [];
+    return v.length > 0 && v.every(x => x.stock === 0);
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans">
