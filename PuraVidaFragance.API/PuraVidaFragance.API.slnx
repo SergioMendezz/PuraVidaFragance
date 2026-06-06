@@ -7,6 +7,5 @@
   </Project>
   <Project Path="DA/DA.csproj" />
   <Project Path="Flujo/Flujo.csproj" />
-  <Project Path="Hashes/Hashes.csproj" Id="647ed15e-1ee5-413d-a88e-74fedd390dc0" />
   <Project Path="Servicios/Servicios.csproj" />
 </Solution>
