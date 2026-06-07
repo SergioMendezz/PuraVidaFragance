@@ -434,5 +434,7 @@ export default function Tienda() {
       {selectedBodySpray && <BodySprayModal spray={selectedBodySpray}      onClose={() => setSelectedBodySpray(null)} />}
       {selectedSet       && <SetModal       set={selectedSet}              onClose={() => setSelectedSet(null)} />}
     </div>
+
+    
   );
 }
