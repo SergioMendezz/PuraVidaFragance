@@ -15,7 +15,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // Permite enviar el token JWT desde Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -44,19 +43,27 @@ builder.Services.AddSwaggerGen(c =>
 // ── Inyección de dependencias ──────────────────────────
 builder.Services.AddScoped<IRepositorioDapper, RepositorioDapper>();
 
+// DA
 builder.Services.AddScoped<IPerfumeDA, PerfumeDA>();
 builder.Services.AddScoped<IVarianteDA, VarianteDA>();
 builder.Services.AddScoped<IMarcaDA, MarcaDA>();
 builder.Services.AddScoped<INotaDA, NotaDA>();
-builder.Services.AddScoped<IUsuarioDA, UsuarioDA>();   // ← nuevo
+builder.Services.AddScoped<IUsuarioDA, UsuarioDA>();
+builder.Services.AddScoped<IBodyDA, BodyDA>();
+builder.Services.AddScoped<IBodySprayDA, BodySprayDA>();
+builder.Services.AddScoped<ISetDA, SetDA>();
 
+// Flujo 
 builder.Services.AddScoped<IPerfumeFlujo, PerfumeFlujo>();
 builder.Services.AddScoped<IVarianteFlujo, VarianteFlujo>();
 builder.Services.AddScoped<IMarcaFlujo, MarcaFlujo>();
 builder.Services.AddScoped<INotaFlujo, NotaFlujo>();
-builder.Services.AddScoped<IAuthFlujo, AuthFlujo>();  // ← nuevo
+builder.Services.AddScoped<IAuthFlujo, AuthFlujo>();
+builder.Services.AddScoped<IBodyFlujo, BodyFlujo>();
+builder.Services.AddScoped<IBodySprayFlujo, BodySprayFlujo>();
+builder.Services.AddScoped<ISetFlujo, SetFlujo>();
 
-builder.Services.AddScoped<IJwtService, JwtService>();    // ← nuevo
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 // ── JWT ────────────────────────────────────────────────
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -92,10 +99,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
 
 app.UseHttpsRedirection();
 app.UseCors("Frontend");

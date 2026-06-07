@@ -3,12 +3,17 @@ import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { section: "Catálogo", items: [
-    { to: "/admin/perfumes", icon: "ti-droplet",  label: "Perfumes"  },
-    { to: "/admin/marcas",   icon: "ti-tag",       label: "Marcas"    },
-    { to: "/admin/notas",    icon: "ti-leaf",      label: "Notas"     },
+    { to: "/admin/perfumes",   icon: "ti-droplet",     label: "Perfumes"   },
+    { to: "/admin/marcas",     icon: "ti-tag",         label: "Marcas"     },
+    { to: "/admin/notas",      icon: "ti-leaf",        label: "Notas"      },
   ]},
   { section: "Inventario", items: [
-    { to: "/admin/variantes", icon: "ti-box", label: "Variantes" },
+    { to: "/admin/variantes",  icon: "ti-box",         label: "Variantes"  },
+  ]},
+  { section: "Productos", items: [
+    { to: "/admin/bodys",      icon: "ti-bottle",      label: "Bodys"      },
+    { to: "/admin/bodysprays", icon: "ti-spray",       label: "Body Sprays"},
+    { to: "/admin/sets",       icon: "ti-gift",        label: "Sets"       },
   ]},
 ];
 
