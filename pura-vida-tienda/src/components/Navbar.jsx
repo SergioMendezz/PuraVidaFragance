@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Navbar({ onScrollCatalogo }) {
+export default function Navbar({ onScrollCatalogo, onScrollBodys, onScrollBodySprays, onScrollSets }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -13,7 +13,16 @@ export default function Navbar({ onScrollCatalogo }) {
 
         <div className="hidden md:flex items-center gap-8">
           <button onClick={onScrollCatalogo} className="text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors">
-            Catálogo
+            Perfumes
+          </button>
+          <button onClick={onScrollBodys} className="text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors">
+            Bodys
+          </button>
+          <button onClick={onScrollBodySprays} className="text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors">
+            Body Sprays
+          </button>
+          <button onClick={onScrollSets} className="text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors">
+            Sets
           </button>
           <a href="https://wa.me/50670987605" target="_blank" rel="noreferrer"
             className="text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors">
@@ -33,7 +42,13 @@ export default function Navbar({ onScrollCatalogo }) {
       {menuOpen && (
         <div className="md:hidden border-t border-[#EBEBEB] bg-white px-6 py-4 flex flex-col gap-4">
           <button onClick={() => { onScrollCatalogo(); setMenuOpen(false); }}
-            className="text-[10px] tracking-[3px] uppercase text-gray-500 text-left">Catálogo</button>
+            className="text-[10px] tracking-[3px] uppercase text-gray-500 text-left">Perfumes</button>
+          <button onClick={() => { onScrollBodys(); setMenuOpen(false); }}
+            className="text-[10px] tracking-[3px] uppercase text-gray-500 text-left">Bodys</button>
+          <button onClick={() => { onScrollBodySprays(); setMenuOpen(false); }}
+            className="text-[10px] tracking-[3px] uppercase text-gray-500 text-left">Body Sprays</button>
+          <button onClick={() => { onScrollSets(); setMenuOpen(false); }}
+            className="text-[10px] tracking-[3px] uppercase text-gray-500 text-left">Sets</button>
           <a href="https://wa.me/50670987605" target="_blank" rel="noreferrer"
             className="text-[10px] tracking-[3px] uppercase text-gray-500">WhatsApp</a>
           <a href="https://instagram.com/pura_vida_fragance" target="_blank" rel="noreferrer"
