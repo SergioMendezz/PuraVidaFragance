@@ -346,9 +346,9 @@ const filtradosSets = sets.filter(s =>
         <section ref={bodysRef}>
           <SeccionHeader titulo="Bodys" subtitulo="Cuidado corporal" />
           <FiltrosBuscadorMarca
-  searchVal={setsSearch} onSearch={setSetsSearch}
-  marcaVal={setsMarcaFiltro} onMarca={setSetsMarcaFiltro}
-            marcasOpts={marcasBodys} placeholder="Buscar body..."
+  searchVal={bodySearch} onSearch={setBodySearch}
+  marcaVal={bodyMarcaFiltro} onMarca={setBodyMarcaFiltro}
+  marcasOpts={marcasBodys} placeholder="Buscar body..."
           />
           {loading ? <Skeleton /> : filtradosBodys.length === 0 ? (
             <GridVacio
@@ -402,8 +402,8 @@ const filtradosSets = sets.filter(s =>
         <section ref={setsRef}>
           <SeccionHeader titulo="Sets" subtitulo="Regalos y colecciones" />
           <FiltrosBuscadorMarca
-            searchVal={setSearch} onSearch={setSetSearch}
-            marcaVal={setMarcaFiltro} onMarca={setSetMarcaFiltro}
+            searchVal={setsSearch} onSearch={setSetsSearch}
+            marcaVal={setsMarcaFiltro} onMarca={setSetsMarcaFiltro}
             marcasOpts={marcasSets} placeholder="Buscar set..."
           />
           {loading ? <Skeleton /> : filtradosSets.length === 0 ? (
