@@ -35,8 +35,8 @@ export default function Tienda() {
   const [sprayMarcaFiltro, setSprayMarcaFiltro] = useState("");
 
   // Filtros sets
-  const [setSearch, setSetSearch]         = useState("");
-  const [setMarcaFiltro, setSetMarcaFiltro] = useState("");
+const [setsSearch, setSetsSearch]           = useState("");
+const [setsMarcaFiltro, setSetsMarcaFiltro] = useState("");
 
   const [selectedPerfume,   setSelectedPerfume]   = useState(null);
   const [selectedBody,      setSelectedBody]      = useState(null);
@@ -93,10 +93,10 @@ export default function Tienda() {
     (!sprayMarcaFiltro || s.marca === sprayMarcaFiltro)
   );
 
-  const filtradosSets = sets.filter(s =>
-    s.nombre.toLowerCase().includes(setSearch.toLowerCase()) &&
-    (!setMarcaFiltro || s.marca === setMarcaFiltro)
-  );
+const filtradosSets = sets.filter(s =>
+  s.nombre.toLowerCase().includes(setsSearch.toLowerCase()) &&
+  (!setsMarcaFiltro || s.marca === setsMarcaFiltro)
+);
 
   const getPrecioMin = (p) => {
     const v = Array.isArray(p.variantes) ? p.variantes : [];
@@ -346,8 +346,8 @@ export default function Tienda() {
         <section ref={bodysRef}>
           <SeccionHeader titulo="Bodys" subtitulo="Cuidado corporal" />
           <FiltrosBuscadorMarca
-            searchVal={bodySearch} onSearch={setBodySearch}
-            marcaVal={bodyMarcaFiltro} onMarca={setBodyMarcaFiltro}
+  searchVal={setsSearch} onSearch={setSetsSearch}
+  marcaVal={setsMarcaFiltro} onMarca={setSetsMarcaFiltro}
             marcasOpts={marcasBodys} placeholder="Buscar body..."
           />
           {loading ? <Skeleton /> : filtradosBodys.length === 0 ? (
@@ -409,7 +409,7 @@ export default function Tienda() {
           {loading ? <Skeleton /> : filtradosSets.length === 0 ? (
             <GridVacio
               mensaje={sets.length === 0 ? "Próximamente" : "No se encontraron sets"}
-              onLimpiar={sets.length > 0 ? () => { setSetSearch(""); setSetMarcaFiltro(""); } : null}
+              onLimpiar={sets.length > 0 ? () => { setSetsSearch(""); setSetsMarcaFiltro(""); } : null}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
