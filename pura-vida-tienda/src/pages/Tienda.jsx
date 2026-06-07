@@ -14,21 +14,34 @@ export default function Tienda() {
   const bodyspraysRef = useRef(null);
   const setsRef       = useRef(null);
 
-  const [perfumes, setPerfumes]   = useState([]);
-  const [marcas, setMarcas]       = useState([]);
-  const [bodys, setBodys]         = useState([]);
-  const [sprays, setSprays]       = useState([]);
-  const [sets, setSets]           = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const [perfumes, setPerfumes] = useState([]);
+  const [marcas, setMarcas]     = useState([]);
+  const [bodys, setBodys]       = useState([]);
+  const [sprays, setSprays]     = useState([]);
+  const [sets, setSets]         = useState([]);
+  const [loading, setLoading]   = useState(true);
 
+  // Filtros perfumes
   const [search, setSearch]           = useState("");
   const [marcaFiltro, setMarcaFiltro] = useState("");
   const [notaFiltro, setNotaFiltro]   = useState("");
 
-  const [selectedPerfume,    setSelectedPerfume]    = useState(null);
-  const [selectedBody,       setSelectedBody]       = useState(null);
-  const [selectedBodySpray,  setSelectedBodySpray]  = useState(null);
-  const [selectedSet,        setSelectedSet]        = useState(null);
+  // Filtros bodys
+  const [bodySearch, setBodySearch]         = useState("");
+  const [bodyMarcaFiltro, setBodyMarcaFiltro] = useState("");
+
+  // Filtros body sprays
+  const [spraySearch, setSpraySearch]           = useState("");
+  const [sprayMarcaFiltro, setSprayMarcaFiltro] = useState("");
+
+  // Filtros sets
+  const [setSearch, setSetSearch]         = useState("");
+  const [setMarcaFiltro, setSetMarcaFiltro] = useState("");
+
+  const [selectedPerfume,   setSelectedPerfume]   = useState(null);
+  const [selectedBody,      setSelectedBody]      = useState(null);
+  const [selectedBodySpray, setSelectedBodySpray] = useState(null);
+  const [selectedSet,       setSelectedSet]       = useState(null);
 
   useEffect(() => {
     Promise.all([getPerfumes(), getMarcas(), getBodys(), getBodySprays(), getSets()])
@@ -45,14 +58,20 @@ export default function Tienda() {
 
   const scrollTo = (ref) => ref.current?.scrollIntoView({ behavior: "smooth" });
 
+  // Notas únicas para chips
   const todasNotas = [...new Map(
     perfumes.flatMap(p => Array.isArray(p.notas) ? p.notas : []).map(n => [n.nombre, n])
   ).values()].sort((a, b) => b.intensidad - a.intensidad);
 
-  const filtrados = perfumes
+  // Marcas únicas por sección
+  const marcasBodys  = [...new Map(bodys.filter(b => b.marca).map(b => [b.idMarca, { id: b.idMarca, nombre: b.marca }])).values()];
+  const marcasSprays = [...new Map(sprays.filter(s => s.marca).map(s => [s.idMarca, { id: s.idMarca, nombre: s.marca }])).values()];
+  const marcasSets   = [...new Map(sets.filter(s => s.marca).map(s => [s.idMarca, { id: s.idMarca, nombre: s.marca }])).values()];
+
+  // Filtrados
+  const filtradosPerfumes = perfumes
     .filter(p => {
-      const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                          p.marca?.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) || p.marca?.toLowerCase().includes(search.toLowerCase());
       const matchMarca  = !marcaFiltro || p.marca === marcaFiltro;
       const matchNota   = !notaFiltro  || (Array.isArray(p.notas) ? p.notas : []).some(n => n.nombre === notaFiltro);
       return matchSearch && matchMarca && matchNota;
@@ -63,6 +82,21 @@ export default function Tienda() {
       const intB = (Array.isArray(b.notas) ? b.notas : []).find(n => n.nombre === notaFiltro)?.intensidad ?? 0;
       return intB - intA;
     });
+
+  const filtradosBodys  = bodys.filter(b =>
+    b.nombre.toLowerCase().includes(bodySearch.toLowerCase()) &&
+    (!bodyMarcaFiltro || b.marca === bodyMarcaFiltro)
+  );
+
+  const filtradosSprays = sprays.filter(s =>
+    s.nombre.toLowerCase().includes(spraySearch.toLowerCase()) &&
+    (!sprayMarcaFiltro || s.marca === sprayMarcaFiltro)
+  );
+
+  const filtradosSets = sets.filter(s =>
+    s.nombre.toLowerCase().includes(setSearch.toLowerCase()) &&
+    (!setMarcaFiltro || s.marca === setMarcaFiltro)
+  );
 
   const getPrecioMin = (p) => {
     const v = Array.isArray(p.variantes) ? p.variantes : [];
@@ -77,33 +111,95 @@ export default function Tienda() {
     return v.length > 0 && v.every(x => x.stock === 0);
   };
 
-  // Componente reutilizable para sección de catálogo
-  const SeccionHeader = ({ titulo, subtitulo, count, label }) => (
+  // Header reutilizable
+  const SeccionHeader = ({ titulo, subtitulo }) => (
     <div className="border-t border-[#EBEBEB] pt-16 mb-10">
       <p className="text-[10px] tracking-[5px] uppercase text-gray-500 mb-2">{subtitulo}</p>
-      <div className="flex items-end justify-between">
-        <h2 className="text-4xl font-light text-[#1B1B1B] tracking-wide"
-          style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-          {titulo}
-        </h2>
-        {count > 0 && (
-          <span className="text-[11px] tracking-[2px] uppercase text-gray-400 mb-1">
-            {count} {label}
-          </span>
-        )}
-      </div>
+      <h2 className="text-4xl font-light text-[#1B1B1B] tracking-wide"
+        style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+        {titulo}
+      </h2>
     </div>
   );
 
-  // Placeholder visual cuando no hay imagen
-  const PlaceholderIcon = ({ tipo }) => {
-    const icons = { body: "ti-droplet-filled", spray: "ti-wind", set: "ti-gift" };
-    return (
-      <div className="h-48 bg-[#F5F5F5] mb-4 flex items-center justify-center">
-        <i className={`ti ${icons[tipo] ?? "ti-box"} text-4xl text-[#D0D0D0]`} />
+  // Filtros reutilizables (búsqueda + marca)
+  const FiltrosBuscadorMarca = ({ searchVal, onSearch, marcaVal, onMarca, marcasOpts, placeholder }) => (
+    <div className="flex flex-col sm:flex-row gap-3 mb-8">
+      <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 flex-1">
+        <i className="ti ti-search text-gray-500 text-sm" />
+        <input value={searchVal} onChange={(e) => onSearch(e.target.value)}
+          placeholder={placeholder}
+          className="flex-1 outline-none text-sm text-[#1B1B1B] placeholder-gray-400 bg-transparent" />
+        {searchVal && (
+          <button onClick={() => onSearch("")} className="text-gray-400 hover:text-gray-600">
+            <i className="ti ti-x text-sm" />
+          </button>
+        )}
       </div>
-    );
-  };
+      {marcasOpts.length > 0 && (
+        <select value={marcaVal} onChange={(e) => onMarca(e.target.value)}
+          className="border border-[#D0D0D0] px-4 py-2.5 text-sm text-[#444] bg-white outline-none focus:border-[#1B1B1B] transition-colors">
+          <option value="">Todas las marcas</option>
+          {marcasOpts.map(m => <option key={m.id} value={m.nombre}>{m.nombre}</option>)}
+        </select>
+      )}
+    </div>
+  );
+
+  // Tarjeta reutilizable para body, spray y set
+  const TarjetaProducto = ({ item, subtitulo, onClick, placeholder }) => (
+    <div className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group" onClick={onClick}>
+      {item.imagenUrl ? (
+        <div className="h-48 mb-4 overflow-hidden">
+          <img src={item.imagenUrl} alt={item.nombre}
+            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
+        </div>
+      ) : (
+        <div className="h-48 bg-[#F5F5F5] mb-4 flex items-center justify-center">
+          <i className={`ti ${placeholder} text-4xl text-[#D0D0D0]`} />
+        </div>
+      )}
+      {item.marca && (
+        <p className="text-[11px] tracking-[3px] uppercase text-[#666] mb-1">{item.marca}</p>
+      )}
+      <p className="text-[10px] tracking-[2px] uppercase text-[#999] mb-1">{subtitulo}</p>
+      <p className="mb-3 leading-tight text-[#1B1B1B]"
+        style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontWeight: 400 }}>
+        {item.nombre}
+      </p>
+      <p className="text-base font-light text-[#1B1B1B] mb-3">
+        ₡{Number(item.precio).toLocaleString()}
+      </p>
+      <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
+        Ver detalles →
+      </span>
+    </div>
+  );
+
+  // Grid vacío reutilizable
+  const GridVacio = ({ mensaje, onLimpiar }) => (
+    <div className="text-center py-20 bg-[#FAFAFA]">
+      <p className="text-sm text-gray-500">{mensaje}</p>
+      {onLimpiar && (
+        <button onClick={onLimpiar} className="mt-4 text-[11px] tracking-[2px] uppercase text-[#1B1B1B] underline">
+          Limpiar filtros
+        </button>
+      )}
+    </div>
+  );
+
+  // Skeleton de carga
+  const Skeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
+      {[1,2,3].map(i => (
+        <div key={i} className="bg-white p-5 animate-pulse">
+          <div className="h-48 bg-gray-100 mb-4" />
+          <div className="h-3 bg-gray-100 w-1/3 mb-2" />
+          <div className="h-4 bg-gray-100 w-2/3" />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -124,7 +220,7 @@ export default function Tienda() {
         <button onClick={() => scrollTo(catalogoRef)}
           className="flex flex-col items-center gap-2 text-[10px] tracking-[3px] uppercase text-gray-500 hover:text-[#1B1B1B] transition-colors animate-bounce">
           <span>Ver catálogo</span>
-          <i className="ti ti-chevron-down text-lg" aria-hidden="true" />
+          <i className="ti ti-chevron-down text-lg" />
         </button>
       </section>
 
@@ -132,9 +228,8 @@ export default function Tienda() {
 
         {/* ── Perfumes ── */}
         <section ref={catalogoRef}>
-          <SeccionHeader titulo="Perfumes" subtitulo="Colección" count={filtrados.length} label="fragancias" />
+          <SeccionHeader titulo="Perfumes" subtitulo="Colección" />
 
-          {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
             <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 flex-1">
               <i className="ti ti-search text-gray-500 text-sm" />
@@ -159,7 +254,6 @@ export default function Tienda() {
             </select>
           </div>
 
-          {/* Chips notas */}
           {todasNotas.length > 0 && (
             <div className="flex gap-2 flex-wrap mb-8">
               <button onClick={() => setNotaFiltro("")}
@@ -176,27 +270,14 @@ export default function Tienda() {
             </div>
           )}
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="bg-white p-5 animate-pulse">
-                  <div className="h-48 bg-gray-100 mb-4" />
-                  <div className="h-3 bg-gray-100 w-1/3 mb-2" />
-                  <div className="h-4 bg-gray-100 w-2/3" />
-                </div>
-              ))}
-            </div>
-          ) : filtrados.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-sm text-gray-500">No se encontraron perfumes</p>
-              <button onClick={() => { setSearch(""); setMarcaFiltro(""); setNotaFiltro(""); }}
-                className="mt-4 text-[11px] tracking-[2px] uppercase text-[#1B1B1B] underline">
-                Limpiar filtros
-              </button>
-            </div>
+          {loading ? <Skeleton /> : filtradosPerfumes.length === 0 ? (
+            <GridVacio
+              mensaje="No se encontraron perfumes"
+              onLimpiar={() => { setSearch(""); setMarcaFiltro(""); setNotaFiltro(""); }}
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
-              {filtrados.map((p) => {
+              {filtradosPerfumes.map((p) => {
                 const varPrincipal = getPrecioMin(p);
                 const notas        = getNotasPrincipales(p);
                 const tieneDecant  = (p.variantes ?? []).some(v => v.tipo === "Decant");
@@ -214,9 +295,7 @@ export default function Tienda() {
                       <span className="text-[11px] tracking-[2px] uppercase text-[#666] font-medium">{p.genero}</span>
                       <div className="flex gap-1.5">
                         {notas.map(n => (
-                          <div key={n.nombre} title={n.nombre}
-                            className="w-3 h-3 rounded-full border border-white"
-                            style={{ backgroundColor: n.colorHex }} />
+                          <div key={n.nombre} title={n.nombre} className="w-3 h-3 rounded-full border border-white" style={{ backgroundColor: n.colorHex }} />
                         ))}
                       </div>
                     </div>
@@ -239,9 +318,7 @@ export default function Tienda() {
                       {p.nombre}
                     </p>
                     {varPrincipal && !agotado && (
-                      <p className="text-base font-light text-[#1B1B1B] mb-3">
-                        ₡{Number(varPrincipal.precio).toLocaleString()}
-                      </p>
+                      <p className="text-base font-light text-[#1B1B1B] mb-3">₡{Number(varPrincipal.precio).toLocaleString()}</p>
                     )}
                     <div className="flex items-center justify-between">
                       {!agotado && (
@@ -260,133 +337,102 @@ export default function Tienda() {
               })}
             </div>
           )}
+          <p className="text-center text-[11px] tracking-[2px] uppercase text-[#666] mt-8">
+            {filtradosPerfumes.length} {filtradosPerfumes.length === 1 ? "fragancia" : "fragancias"}
+          </p>
         </section>
 
         {/* ── Bodys ── */}
-        {!loading && bodys.length > 0 && (
-          <section ref={bodysRef}>
-            <SeccionHeader titulo="Bodys" subtitulo="Cuidado corporal" count={bodys.length} label="productos" />
+        <section ref={bodysRef}>
+          <SeccionHeader titulo="Bodys" subtitulo="Cuidado corporal" />
+          <FiltrosBuscadorMarca
+            searchVal={bodySearch} onSearch={setBodySearch}
+            marcaVal={bodyMarcaFiltro} onMarca={setBodyMarcaFiltro}
+            marcasOpts={marcasBodys} placeholder="Buscar body..."
+          />
+          {loading ? <Skeleton /> : filtradosBodys.length === 0 ? (
+            <GridVacio
+              mensaje={bodys.length === 0 ? "Próximamente" : "No se encontraron bodys"}
+              onLimpiar={bodys.length > 0 ? () => { setBodySearch(""); setBodyMarcaFiltro(""); } : null}
+            />
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
-              {bodys.map((b) => (
-                <div key={b.id}
-                  className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"
-                  onClick={() => setSelectedBody(b)}>
-                  {b.imagenUrl ? (
-                    <div className="h-48 mb-4 overflow-hidden">
-                      <img src={b.imagenUrl} alt={b.nombre}
-                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="h-48 bg-[#F5F5F5] mb-4 flex items-center justify-center">
-                      <i className="ti ti-droplet-filled text-4xl text-[#D0D0D0]" />
-                    </div>
-                  )}
-                  <p className="text-[10px] tracking-[3px] uppercase text-[#666] mb-1">Body · {b.mililitros}ml</p>
-                  <p className="mb-3 leading-tight text-[#1B1B1B]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontWeight: 400 }}>
-                    {b.nombre}
-                  </p>
-                  <p className="text-base font-light text-[#1B1B1B] mb-3">
-                    ₡{Number(b.precio).toLocaleString()}
-                  </p>
-                  <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
-                    Ver detalles →
-                  </span>
-                </div>
+              {filtradosBodys.map(b => (
+                <TarjetaProducto key={b.id} item={b}
+                  subtitulo={`${b.mililitros} ml`}
+                  placeholder="ti-droplet-filled"
+                  onClick={() => setSelectedBody(b)} />
               ))}
             </div>
-          </section>
-        )}
+          )}
+          <p className="text-center text-[11px] tracking-[2px] uppercase text-[#666] mt-8">
+            {filtradosBodys.length} {filtradosBodys.length === 1 ? "producto" : "productos"}
+          </p>
+        </section>
 
         {/* ── Body Sprays ── */}
-        {!loading && sprays.length > 0 && (
-          <section ref={bodyspraysRef}>
-            <SeccionHeader titulo="Body Sprays" subtitulo="Colección" count={sprays.length} label="productos" />
+        <section ref={bodyspraysRef}>
+          <SeccionHeader titulo="Body Sprays" subtitulo="Colección" />
+          <FiltrosBuscadorMarca
+            searchVal={spraySearch} onSearch={setSpraySearch}
+            marcaVal={sprayMarcaFiltro} onMarca={setSprayMarcaFiltro}
+            marcasOpts={marcasSprays} placeholder="Buscar body spray..."
+          />
+          {loading ? <Skeleton /> : filtradosSprays.length === 0 ? (
+            <GridVacio
+              mensaje={sprays.length === 0 ? "Próximamente" : "No se encontraron body sprays"}
+              onLimpiar={sprays.length > 0 ? () => { setSpraySearch(""); setSprayMarcaFiltro(""); } : null}
+            />
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
-              {sprays.map((s) => (
-                <div key={s.id}
-                  className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"
-                  onClick={() => setSelectedBodySpray(s)}>
-                  {s.imagenUrl ? (
-                    <div className="h-48 mb-4 overflow-hidden">
-                      <img src={s.imagenUrl} alt={s.nombre}
-                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="h-48 bg-[#F5F5F5] mb-4 flex items-center justify-center">
-                      <i className="ti ti-wind text-4xl text-[#D0D0D0]" />
-                    </div>
-                  )}
-                  {s.nombrePerfumeBase && (
-                    <p className="text-[10px] tracking-[3px] uppercase text-[#666] mb-1">
-                      Basado en {s.nombrePerfumeBase}
-                    </p>
-                  )}
-                  <p className={`text-[10px] tracking-[3px] uppercase text-[#666] mb-1 ${s.nombrePerfumeBase ? "hidden" : ""}`}>
-                    Body Spray · {s.mililitros}ml
-                  </p>
-                  <p className="mb-3 leading-tight text-[#1B1B1B]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontWeight: 400 }}>
-                    {s.nombre}
-                  </p>
-                  <p className="text-base font-light text-[#1B1B1B] mb-3">
-                    ₡{Number(s.precio).toLocaleString()}
-                  </p>
-                  <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
-                    Ver detalles →
-                  </span>
-                </div>
+              {filtradosSprays.map(s => (
+                <TarjetaProducto key={s.id} item={s}
+                  subtitulo={s.nombrePerfumeBase ? `Basado en ${s.nombrePerfumeBase}` : `${s.mililitros} ml`}
+                  placeholder="ti-wind"
+                  onClick={() => setSelectedBodySpray(s)} />
               ))}
             </div>
-          </section>
-        )}
+          )}
+          <p className="text-center text-[11px] tracking-[2px] uppercase text-[#666] mt-8">
+            {filtradosSprays.length} {filtradosSprays.length === 1 ? "producto" : "productos"}
+          </p>
+        </section>
 
         {/* ── Sets ── */}
-        {!loading && sets.length > 0 && (
-          <section ref={setsRef}>
-            <SeccionHeader titulo="Sets" subtitulo="Regalos y colecciones" count={sets.length} label="sets" />
+        <section ref={setsRef}>
+          <SeccionHeader titulo="Sets" subtitulo="Regalos y colecciones" />
+          <FiltrosBuscadorMarca
+            searchVal={setSearch} onSearch={setSetSearch}
+            marcaVal={setMarcaFiltro} onMarca={setSetMarcaFiltro}
+            marcasOpts={marcasSets} placeholder="Buscar set..."
+          />
+          {loading ? <Skeleton /> : filtradosSets.length === 0 ? (
+            <GridVacio
+              mensaje={sets.length === 0 ? "Próximamente" : "No se encontraron sets"}
+              onLimpiar={sets.length > 0 ? () => { setSetSearch(""); setSetMarcaFiltro(""); } : null}
+            />
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[#EBEBEB]">
-              {sets.map((s) => (
-                <div key={s.id}
-                  className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"
-                  onClick={() => setSelectedSet(s)}>
-                  {s.imagenUrl ? (
-                    <div className="h-48 mb-4 overflow-hidden">
-                      <img src={s.imagenUrl} alt={s.nombre}
-                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="h-48 bg-[#F5F5F5] mb-4 flex items-center justify-center">
-                      <i className="ti ti-gift text-4xl text-[#D0D0D0]" />
-                    </div>
-                  )}
-                  <p className="text-[10px] tracking-[3px] uppercase text-[#666] mb-1">
-                    Set · {s.items?.length ?? 0} productos
-                  </p>
-                  <p className="mb-3 leading-tight text-[#1B1B1B]"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "17px", fontWeight: 400 }}>
-                    {s.nombre}
-                  </p>
-                  <p className="text-base font-light text-[#1B1B1B] mb-3">
-                    ₡{Number(s.precio).toLocaleString()}
-                  </p>
-                  <span className="text-[10px] tracking-[2px] uppercase text-[#666] group-hover:text-[#1B1B1B] transition-colors font-medium">
-                    Ver detalles →
-                  </span>
-                </div>
+              {filtradosSets.map(s => (
+                <TarjetaProducto key={s.id} item={s}
+                  subtitulo={`${s.items?.length ?? 0} productos incluidos`}
+                  placeholder="ti-gift"
+                  onClick={() => setSelectedSet(s)} />
               ))}
             </div>
-          </section>
-        )}
+          )}
+          <p className="text-center text-[11px] tracking-[2px] uppercase text-[#666] mt-8">
+            {filtradosSets.length} {filtradosSets.length === 1 ? "set" : "sets"}
+          </p>
+        </section>
 
       </div>
 
       <FloatingButtons />
-
-      {selectedPerfume   && <PerfumeModal   perfume={selectedPerfume}       onClose={() => setSelectedPerfume(null)} />}
-      {selectedBody      && <BodyModal      body={selectedBody}             onClose={() => setSelectedBody(null)} />}
-      {selectedBodySpray && <BodySprayModal spray={selectedBodySpray}       onClose={() => setSelectedBodySpray(null)} />}
-      {selectedSet       && <SetModal       set={selectedSet}               onClose={() => setSelectedSet(null)} />}
+      {selectedPerfume   && <PerfumeModal   perfume={selectedPerfume}      onClose={() => setSelectedPerfume(null)} />}
+      {selectedBody      && <BodyModal      body={selectedBody}            onClose={() => setSelectedBody(null)} />}
+      {selectedBodySpray && <BodySprayModal spray={selectedBodySpray}      onClose={() => setSelectedBodySpray(null)} />}
+      {selectedSet       && <SetModal       set={selectedSet}              onClose={() => setSelectedSet(null)} />}
     </div>
   );
 }

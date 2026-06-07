@@ -18,6 +18,7 @@ namespace Abstracciones.Modelos
 
         public string? Descripcion { get; set; }
         public string? ImagenUrl { get; set; }
+        public Guid? IdMarca { get; set; }
     }
 
     public class BodyRequest : BodyBase { }
@@ -25,5 +26,6 @@ namespace Abstracciones.Modelos
     public class BodyResponse : BodyBase
     {
         public Guid Id { get; set; }
+        public string? Marca { get; set; }
     }
 }

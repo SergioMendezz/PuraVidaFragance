@@ -56,7 +56,8 @@ namespace DA
                     setReq.Nombre,
                     setReq.Precio,
                     setReq.Descripcion,
-                    setReq.ImagenUrl
+                    setReq.ImagenUrl,
+                    setReq.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
 
@@ -78,11 +79,11 @@ namespace DA
                     setReq.Nombre,
                     setReq.Precio,
                     setReq.Descripcion,
-                    setReq.ImagenUrl
+                    setReq.ImagenUrl,
+                    setReq.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
 
-            // Borrar items anteriores y reinsertar
             var itemsActuales = await ObtenerItems(Id);
             foreach (var item in itemsActuales)
                 await _sqlConnection.ExecuteAsync(

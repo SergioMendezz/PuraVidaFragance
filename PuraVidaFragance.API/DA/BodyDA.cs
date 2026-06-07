@@ -45,7 +45,8 @@ namespace DA
                     body.Mililitros,
                     body.Precio,
                     body.Descripcion,
-                    body.ImagenUrl
+                    body.ImagenUrl,
+                    body.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
@@ -62,7 +63,8 @@ namespace DA
                     body.Mililitros,
                     body.Precio,
                     body.Descripcion,
-                    body.ImagenUrl
+                    body.ImagenUrl,
+                    body.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
         }

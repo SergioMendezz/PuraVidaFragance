@@ -46,7 +46,8 @@ namespace DA
                     bodySpray.Mililitros,
                     bodySpray.Precio,
                     bodySpray.Descripcion,
-                    bodySpray.ImagenUrl
+                    bodySpray.ImagenUrl,
+                    bodySpray.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
@@ -64,7 +65,8 @@ namespace DA
                     bodySpray.Mililitros,
                     bodySpray.Precio,
                     bodySpray.Descripcion,
-                    bodySpray.ImagenUrl
+                    bodySpray.ImagenUrl,
+                    bodySpray.IdMarca
                 },
                 commandType: System.Data.CommandType.StoredProcedure);
         }

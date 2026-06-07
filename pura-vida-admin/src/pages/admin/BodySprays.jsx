@@ -3,14 +3,15 @@ import { useOutletContext } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { getBodySprays, postBodySpray, putBodySpray, deleteBodySpray, getPerfumes } from "../../services/api";
+import { getBodySprays, postBodySpray, putBodySpray, deleteBodySpray, getPerfumes, getMarcas } from "../../services/api";
 
-const empty = { nombre: "", idPerfumeBase: "", mililitros: "", precio: "", descripcion: "", imagenUrl: "" };
+const empty = { nombre: "", idMarca: "", idPerfumeBase: "", mililitros: "", precio: "", descripcion: "", imagenUrl: "" };
 
 export default function BodySprays() {
   const { onMenuClick } = useOutletContext();
   const [sprays, setSprays]     = useState([]);
   const [perfumes, setPerfumes] = useState([]);
+  const [marcas, setMarcas]     = useState([]);
   const [loading, setLoading]   = useState(true);
   const [modal, setModal]       = useState(false);
   const [confirm, setConfirm]   = useState(null);
@@ -21,10 +22,11 @@ export default function BodySprays() {
 
   const load = async () => {
     try {
-      const [sRes, pRes] = await Promise.all([getBodySprays(), getPerfumes()]);
+      const [sRes, pRes, mRes] = await Promise.all([getBodySprays(), getPerfumes(), getMarcas()]);
       setSprays(Array.isArray(sRes.data) ? sRes.data : []);
       setPerfumes(Array.isArray(pRes.data) ? pRes.data : []);
-    } catch { setSprays([]); setPerfumes([]); }
+      setMarcas(Array.isArray(mRes.data) ? mRes.data : []);
+    } catch { setSprays([]); }
     finally { setLoading(false); }
   };
 
@@ -35,6 +37,7 @@ export default function BodySprays() {
     setEditing(s);
     setForm({
       nombre:        s.nombre,
+      idMarca:       s.idMarca ?? "",
       idPerfumeBase: s.idPerfumeBase ?? "",
       mililitros:    s.mililitros,
       precio:        s.precio,
@@ -52,6 +55,7 @@ export default function BodySprays() {
     try {
       const payload = {
         ...form,
+        idMarca:       form.idMarca || null,
         idPerfumeBase: form.idPerfumeBase || null,
         mililitros:    parseFloat(form.mililitros),
         precio:        parseFloat(form.precio),
@@ -96,7 +100,7 @@ export default function BodySprays() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre", "Perfume base", "Mililitros", "Precio", "Acciones"].map(h => (
+                    {["Nombre", "Marca", "Perfume base", "Mililitros", "Precio", "Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>
@@ -105,11 +109,11 @@ export default function BodySprays() {
                   {sprays.map((s) => (
                     <tr key={s.id} className="border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA]">
                       <td className="px-5 py-3.5 text-sm font-medium text-[#1B1B1B]">{s.nombre}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500">{s.marca ?? "—"}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">
                         {s.nombrePerfumeBase
                           ? <span className="inline-block bg-[#F0F0F0] text-gray-600 px-2.5 py-1 text-[10px] tracking-widest uppercase">{s.nombrePerfumeBase}</span>
-                          : <span className="text-gray-300">—</span>
-                        }
+                          : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">{s.mililitros} ml</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">₡{Number(s.precio).toLocaleString()}</td>
@@ -126,7 +130,7 @@ export default function BodySprays() {
                     </tr>
                   ))}
                   {sprays.length === 0 && (
-                    <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">No hay body sprays registrados</td></tr>
+                    <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">No hay body sprays registrados</td></tr>
                   )}
                 </tbody>
               </table>
@@ -142,6 +146,14 @@ export default function BodySprays() {
               <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Nombre</label>
               <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Marca</label>
+              <select value={form.idMarca} onChange={(e) => setForm({ ...form, idMarca: e.target.value })}
+                className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors bg-white">
+                <option value="">Sin marca</option>
+                {marcas.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Perfume base <span className="text-gray-300 normal-case tracking-normal">(opcional)</span></label>

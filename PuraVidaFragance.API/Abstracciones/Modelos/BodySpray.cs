@@ -9,6 +9,7 @@ namespace Abstracciones.Modelos
         public string Nombre { get; set; }
 
         public Guid? IdPerfumeBase { get; set; }
+        public Guid? IdMarca { get; set; }
 
         [Required(ErrorMessage = "Los mililitros son requeridos")]
         [Range(0.1, 9999, ErrorMessage = "Los mililitros deben ser mayores a 0")]
@@ -27,6 +28,7 @@ namespace Abstracciones.Modelos
     public class BodySprayResponse : BodySprayBase
     {
         public Guid Id { get; set; }
+        public string? Marca { get; set; }
         public string? NombrePerfumeBase { get; set; }
     }
 }

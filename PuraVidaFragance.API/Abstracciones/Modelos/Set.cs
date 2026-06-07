@@ -14,6 +14,7 @@ namespace Abstracciones.Modelos
 
         public string? Descripcion { get; set; }
         public string? ImagenUrl { get; set; }
+        public Guid? IdMarca { get; set; }
     }
 
     public class SetRequest : SetBase
@@ -24,6 +25,7 @@ namespace Abstracciones.Modelos
     public class SetResponse : SetBase
     {
         public Guid Id { get; set; }
+        public string? Marca { get; set; }
         public List<ItemSetResponse> Items { get; set; } = new();
     }
 

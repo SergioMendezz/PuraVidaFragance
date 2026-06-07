@@ -3,13 +3,14 @@ import { useOutletContext } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { getBodys, postBody, putBody, deleteBody } from "../../services/api";
+import { getBodys, postBody, putBody, deleteBody, getMarcas } from "../../services/api";
 
-const empty = { nombre: "", mililitros: "", precio: "", descripcion: "", imagenUrl: "" };
+const empty = { nombre: "", idMarca: "", mililitros: "", precio: "", descripcion: "", imagenUrl: "" };
 
 export default function Bodys() {
   const { onMenuClick } = useOutletContext();
   const [bodys, setBodys]     = useState([]);
+  const [marcas, setMarcas]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal]     = useState(false);
   const [confirm, setConfirm] = useState(null);
@@ -20,9 +21,10 @@ export default function Bodys() {
 
   const load = async () => {
     try {
-      const res = await getBodys();
-      setBodys(Array.isArray(res.data) ? res.data : []);
-    } catch { setBodys([]); }
+      const [bRes, mRes] = await Promise.all([getBodys(), getMarcas()]);
+      setBodys(Array.isArray(bRes.data) ? bRes.data : []);
+      setMarcas(Array.isArray(mRes.data) ? mRes.data : []);
+    } catch { setBodys([]); setMarcas([]); }
     finally { setLoading(false); }
   };
 
@@ -32,11 +34,12 @@ export default function Bodys() {
   const openEdit = (b) => {
     setEditing(b);
     setForm({
-      nombre:     b.nombre,
-      mililitros: b.mililitros,
-      precio:     b.precio,
+      nombre:      b.nombre,
+      idMarca:     b.idMarca ?? "",
+      mililitros:  b.mililitros,
+      precio:      b.precio,
       descripcion: b.descripcion ?? "",
-      imagenUrl:  b.imagenUrl ?? "",
+      imagenUrl:   b.imagenUrl ?? "",
     });
     setError("");
     setModal(true);
@@ -49,6 +52,7 @@ export default function Bodys() {
     try {
       const payload = {
         ...form,
+        idMarca:    form.idMarca || null,
         mililitros: parseFloat(form.mililitros),
         precio:     parseFloat(form.precio),
       };
@@ -92,7 +96,7 @@ export default function Bodys() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre", "Mililitros", "Precio", "Descripción", "Acciones"].map(h => (
+                    {["Nombre", "Marca", "Mililitros", "Precio", "Descripción", "Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>
@@ -101,6 +105,7 @@ export default function Bodys() {
                   {bodys.map((b) => (
                     <tr key={b.id} className="border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA]">
                       <td className="px-5 py-3.5 text-sm font-medium text-[#1B1B1B]">{b.nombre}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-500">{b.marca ?? "—"}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">{b.mililitros} ml</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">₡{Number(b.precio).toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500 max-w-xs truncate">{b.descripcion ?? "—"}</td>
@@ -117,7 +122,7 @@ export default function Bodys() {
                     </tr>
                   ))}
                   {bodys.length === 0 && (
-                    <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">No hay bodys registrados</td></tr>
+                    <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">No hay bodys registrados</td></tr>
                   )}
                 </tbody>
               </table>
@@ -133,6 +138,14 @@ export default function Bodys() {
               <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Nombre</label>
               <input required value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Marca</label>
+              <select value={form.idMarca} onChange={(e) => setForm({ ...form, idMarca: e.target.value })}
+                className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors bg-white">
+                <option value="">Sin marca</option>
+                {marcas.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+              </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
