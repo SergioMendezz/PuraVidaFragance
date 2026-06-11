@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
-import ConfirmDialog from "../../components/ConfirmDialog";
 import {
-  getPerfumes, getMarcas, postPerfume, putPerfume, deletePerfume,
+  getPerfumes, getMarcas, postPerfume, putPerfume, deletePerfume, activarPerfume,
   getNotas, getNotasPorPerfume, postNotaAPerfume, deleteNotaDePerfume
 } from "../../services/api";
 
 const empty = { idMarca: "", nombre: "", genero: "Unisex", descripcion: "", imagenUrl: "" };
+const FILTROS = ["Todos", "Activos", "Inactivos"];
 
 export default function Perfumes() {
   const { onMenuClick } = useOutletContext();
@@ -17,14 +17,12 @@ export default function Perfumes() {
   const [notasCatalogo, setNotasCat]  = useState([]);
   const [loading, setLoading]         = useState(true);
   const [modal, setModal]             = useState(false);
-  const [confirm, setConfirm]         = useState(null);
   const [editing, setEditing]         = useState(null);
   const [form, setForm]               = useState(empty);
   const [saving, setSaving]           = useState(false);
   const [error, setError]             = useState("");
   const [search, setSearch]           = useState("");
-
-  // Notas del perfume que se está editando
+  const [filtro, setFiltro]           = useState("Activos");
   const [notasPerfume, setNotasPerfume] = useState([]);
   const [notaForm, setNotaForm]         = useState({ idNota: "", intensidad: 5 });
   const [savingNota, setSavingNota]     = useState(false);
@@ -41,25 +39,27 @@ export default function Perfumes() {
 
   useEffect(() => { load(); }, []);
 
+  const visibles = perfumes
+    .filter(p => filtro === "Todos" ? true : filtro === "Activos" ? p.activo : !p.activo)
+    .filter(p => p.nombre.toLowerCase().includes(search.toLowerCase()) || p.marca?.toLowerCase().includes(search.toLowerCase()));
+
   const openNew = () => {
     setEditing(null);
-    setForm({ ...empty, idMarca: marcas[0]?.id ?? "" });
+    setForm({ ...empty, idMarca: marcas.find(m => m.activo)?.id ?? "" });
     setNotasPerfume([]);
-    setNotaForm({ idNota: notasCatalogo[0]?.id ?? "", intensidad: 5 });
-    setError("");
-    setModal(true);
+    setNotaForm({ idNota: notasCatalogo.find(n => n.activo)?.id ?? "", intensidad: 5 });
+    setError(""); setModal(true);
   };
 
   const openEdit = async (p) => {
     setEditing(p);
     setForm({ idMarca: p.idMarca, nombre: p.nombre, genero: p.genero, descripcion: p.descripcion ?? "", imagenUrl: p.imagenUrl ?? "" });
-    setError("");
-    setModal(true);
+    setError(""); setModal(true);
     try {
       const res = await getNotasPorPerfume(p.id);
       setNotasPerfume(Array.isArray(res.data) ? res.data : []);
     } catch { setNotasPerfume([]); }
-    setNotaForm({ idNota: notasCatalogo[0]?.id ?? "", intensidad: 5 });
+    setNotaForm({ idNota: notasCatalogo.find(n => n.activo)?.id ?? "", intensidad: 5 });
   };
 
   const closeModal = () => { setModal(false); setEditing(null); setNotasPerfume([]); };
@@ -74,9 +74,12 @@ export default function Perfumes() {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id) => {
-    try { await deletePerfume(id); await load(); }
-    catch { } finally { setConfirm(null); }
+  const handleToggle = async (p) => {
+    try {
+      if (p.activo) await deletePerfume(p.id);
+      else          await activarPerfume(p.id);
+      await load();
+    } catch {}
   };
 
   const handleAgregarNota = async () => {
@@ -101,21 +104,13 @@ export default function Perfumes() {
     } catch { }
   };
 
-  const filtered = perfumes.filter(p =>
-    p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    p.marca?.toLowerCase().includes(search.toLowerCase())
-  );
-
   const notasDisponibles = notasCatalogo.filter(n =>
-    !notasPerfume.some(np => np.idNota === n.id)
+    n.activo && !notasPerfume.some(np => np.idNota === n.id)
   );
 
   return (
     <div className="flex flex-col h-full">
-      <Topbar
-        title="Perfumes"
-        subtitle="Gestión del catálogo"
-        onMenuClick={onMenuClick}
+      <Topbar title="Perfumes" subtitle="Gestión del catálogo" onMenuClick={onMenuClick}
         actions={
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 border border-[#EBEBEB] px-3 py-2 bg-white">
@@ -133,8 +128,8 @@ export default function Perfumes() {
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Perfumes",  value: perfumes.length,                          sub: "en catálogo" },
-            { label: "Marcas",    value: marcas.length,                            sub: "registradas" },
+            { label: "Total",     value: perfumes.length,                        sub: "perfumes" },
+            { label: "Activos",   value: perfumes.filter(p => p.activo).length,  sub: "en tienda" },
             { label: "Completos", value: perfumes.reduce((a,p) => a + (p.variantes?.filter(v=>v.tipo==="Completo").length ?? 0), 0), sub: "frascos" },
             { label: "Decants",   value: perfumes.reduce((a,p) => a + (p.variantes?.filter(v=>v.tipo==="Decant").length ?? 0), 0),   sub: "muestras" },
           ].map(({ label, value, sub }) => (
@@ -146,26 +141,34 @@ export default function Perfumes() {
           ))}
         </div>
 
-        {loading ? (
-          <p className="text-sm text-gray-400">Cargando...</p>
-        ) : (
+        {loading ? <p className="text-sm text-gray-400">Cargando...</p> : (
           <div className="bg-white border border-[#EBEBEB]">
-            <div className="px-5 py-4 border-b border-[#F0F0F0] flex justify-between">
+            <div className="px-5 py-4 border-b border-[#F0F0F0] flex items-center justify-between">
               <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">Catálogo</span>
-              <span className="text-xs text-gray-400">{filtered.length} perfumes</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-400">{visibles.length} perfumes</span>
+                <div className="flex items-center gap-1">
+                  {FILTROS.map(f => (
+                    <button key={f} onClick={() => setFiltro(f)}
+                      className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre","Marca","Género","Variantes","Notas","Acciones"].map(h => (
+                    {["Nombre","Marca","Género","Variantes","Notas","Estado","Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((p) => (
-                    <tr key={p.id} className="border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA]">
+                  {visibles.map((p) => (
+                    <tr key={p.id} className={`border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA] ${!p.activo ? "opacity-50" : ""}`}>
                       <td className="px-5 py-3.5 text-sm font-medium text-[#1B1B1B]">{p.nombre}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">{p.marca}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">{p.genero}</td>
@@ -176,27 +179,33 @@ export default function Perfumes() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex gap-1 items-center">
-                          {p.notas?.slice(0, 4).map((n) => (
+                          {p.notas?.slice(0,4).map((n) => (
                             <div key={n.nombre} title={n.nombre} className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: n.colorHex }} />
                           ))}
-                          {(p.notas?.length ?? 0) > 4 && <span className="text-[10px] text-gray-400">+{p.notas.length - 4}</span>}
+                          {(p.notas?.length ?? 0) > 4 && <span className="text-[10px] text-gray-400">+{p.notas.length-4}</span>}
                           {(p.notas?.length ?? 0) === 0 && <span className="text-[10px] text-gray-400">Sin notas</span>}
                         </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={`text-[10px] tracking-widest uppercase px-2 py-1 ${p.activo ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-400"}`}>
+                          {p.activo ? "Activo" : "Inactivo"}
+                        </span>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex gap-2">
                           <button onClick={() => openEdit(p)} className="border border-[#EBEBEB] p-1.5 text-gray-400 hover:text-[#1B1B1B] transition-all">
                             <i className="ti ti-edit text-sm" />
                           </button>
-                          <button onClick={() => setConfirm(p.id)} className="border border-[#EBEBEB] p-1.5 text-gray-400 hover:text-red-500 transition-all">
-                            <i className="ti ti-trash text-sm" />
+                          <button onClick={() => handleToggle(p)}
+                            className={`border p-1.5 transition-all ${p.activo ? "border-[#EBEBEB] text-gray-400 hover:text-red-500 hover:bg-red-50" : "border-[#EBEBEB] text-gray-400 hover:text-green-600 hover:bg-green-50"}`}>
+                            <i className={`ti ${p.activo ? "ti-eye-off" : "ti-eye"} text-sm`} />
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
-                  {filtered.length === 0 && (
-                    <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">No se encontraron perfumes</td></tr>
+                  {visibles.length === 0 && (
+                    <tr><td colSpan={7} className="px-5 py-8 text-center text-sm text-gray-400">No hay perfumes {filtro.toLowerCase()}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -213,7 +222,7 @@ export default function Perfumes() {
               <select required value={form.idMarca} onChange={(e) => setForm({ ...form, idMarca: e.target.value })}
                 className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors bg-white">
                 <option value="">Seleccionar marca...</option>
-                {marcas.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                {marcas.filter(m => m.activo).map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
               </select>
             </div>
             <div>
@@ -242,7 +251,6 @@ export default function Perfumes() {
             {editing && (
               <div className="border-t border-[#EBEBEB] pt-4">
                 <p className="text-[10px] tracking-[2px] uppercase text-gray-400 mb-3">Notas aromáticas</p>
-
                 {notasPerfume.length > 0 && (
                   <div className="space-y-2 mb-4">
                     {notasPerfume.map((n) => (
@@ -266,7 +274,6 @@ export default function Perfumes() {
                     ))}
                   </div>
                 )}
-
                 {notasDisponibles.length > 0 && (
                   <div className="flex gap-2">
                     <select value={notaForm.idNota} onChange={(e) => setNotaForm({ ...notaForm, idNota: e.target.value })}
@@ -275,20 +282,18 @@ export default function Perfumes() {
                     </select>
                     <input type="number" min="1" max="10" value={notaForm.intensidad}
                       onChange={(e) => setNotaForm({ ...notaForm, intensidad: e.target.value })}
-                      className="w-16 border border-[#EBEBEB] px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1B1B1B] transition-colors"
-                      placeholder="1-10" />
+                      className="w-16 border border-[#EBEBEB] px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1B1B1B] transition-colors" />
                     <button type="button" onClick={handleAgregarNota} disabled={savingNota}
                       className="border border-[#1B1B1B] px-4 py-2 text-xs tracking-widest uppercase text-[#1B1B1B] hover:bg-[#1B1B1B] hover:text-white transition-all disabled:opacity-40">
                       <i className="ti ti-plus text-sm" />
                     </button>
                   </div>
                 )}
-
                 {notasDisponibles.length === 0 && notasPerfume.length === 0 && (
-                  <p className="text-xs text-gray-400">No hay notas en el catálogo. Créalas primero en la sección Notas.</p>
+                  <p className="text-xs text-gray-400">No hay notas activas en el catálogo.</p>
                 )}
                 {notasDisponibles.length === 0 && notasPerfume.length > 0 && (
-                  <p className="text-xs text-gray-400">Todas las notas del catálogo están asignadas.</p>
+                  <p className="text-xs text-gray-400">Todas las notas están asignadas.</p>
                 )}
               </div>
             )}
@@ -302,10 +307,6 @@ export default function Perfumes() {
             </div>
           </form>
         </Modal>
-      )}
-
-      {confirm && (
-        <ConfirmDialog message="¿Eliminar este perfume? Se eliminarán también sus variantes y notas." onConfirm={() => handleDelete(confirm)} onCancel={() => setConfirm(null)} />
       )}
     </div>
   );

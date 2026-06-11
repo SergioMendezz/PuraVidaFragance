@@ -10,5 +10,6 @@ namespace Abstracciones.Interfaces.API
         Task<IActionResult> Agregar(BodyRequest body);
         Task<IActionResult> Editar(Guid Id, BodyRequest body);
         Task<IActionResult> Eliminar(Guid Id);
+        Task<IActionResult> Activar(Guid Id);
     }
 }

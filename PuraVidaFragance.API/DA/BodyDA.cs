@@ -77,6 +77,14 @@ namespace DA
                 new { Id },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
+
+        public async Task<Guid> Activar(Guid Id)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<Guid>(
+                "ActivarBody",
+                new { Id },
+                commandType: System.Data.CommandType.StoredProcedure);
+        }
         #endregion
 
         #region Helpers

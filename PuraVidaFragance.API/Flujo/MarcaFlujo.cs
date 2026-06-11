@@ -18,5 +18,6 @@ namespace Flujo
         public Task<Guid> Agregar(MarcaRequest marca) => _marcaDA.Agregar(marca);
         public Task<Guid> Editar(Guid Id, MarcaRequest marca) => _marcaDA.Editar(Id, marca);
         public Task<Guid> Eliminar(Guid Id) => _marcaDA.Eliminar(Id);
+        public Task<Guid> Activar(Guid Id) => _marcaDA.Activar(Id);
     }
 }

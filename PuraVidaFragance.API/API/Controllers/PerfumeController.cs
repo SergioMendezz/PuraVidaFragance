@@ -41,6 +41,7 @@ namespace API.Controllers
             return Ok(resultado);
         }
 
+
         #endregion
 
         #region Operaciones protegidas (solo admin)
@@ -71,6 +72,14 @@ namespace API.Controllers
                 return NotFound("No se encontró el perfume");
             await _perfumeFlujo.Eliminar(Id);
             return NoContent();
+        }
+
+        [HttpPatch("{Id}/activar")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Activar([FromRoute] Guid Id)
+        {
+            var resultado = await _perfumeFlujo.Activar(Id);
+            return Ok(resultado);
         }
 
         #endregion

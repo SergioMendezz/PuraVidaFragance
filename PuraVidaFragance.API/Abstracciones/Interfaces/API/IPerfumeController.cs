@@ -10,5 +10,6 @@ namespace Abstracciones.Interfaces.API
         Task<IActionResult> Agregar(PerfumeRequest perfume);
         Task<IActionResult> Editar(Guid Id, PerfumeRequest perfume);
         Task<IActionResult> Eliminar(Guid Id);
+        Task<IActionResult> Activar(Guid Id);
     }
 }

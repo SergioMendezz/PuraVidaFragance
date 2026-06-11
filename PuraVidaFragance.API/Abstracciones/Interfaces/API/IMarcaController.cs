@@ -10,5 +10,6 @@ namespace Abstracciones.Interfaces.API
         Task<IActionResult> Agregar(MarcaRequest marca);
         Task<IActionResult> Editar(Guid Id, MarcaRequest marca);
         Task<IActionResult> Eliminar(Guid Id);
+        Task<IActionResult> Activar(Guid Id);
     }
 }

@@ -70,6 +70,13 @@ namespace API.Controllers
             return NoContent();
         }
 
+        [HttpPatch("{Id}/activar")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Activar([FromRoute] Guid Id)
+        {
+            var resultado = await _marcaFlujo.Activar(Id);
+            return Ok(resultado);
+        }
         #endregion
 
         #region Helpers

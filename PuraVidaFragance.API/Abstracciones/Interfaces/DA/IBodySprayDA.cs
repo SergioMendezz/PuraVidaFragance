@@ -9,5 +9,6 @@ namespace Abstracciones.Interfaces.DA
         Task<Guid> Agregar(BodySprayRequest bodySpray);
         Task<Guid> Editar(Guid Id, BodySprayRequest bodySpray);
         Task<Guid> Eliminar(Guid Id);
+        Task<Guid> Activar(Guid Id);
     }
 }

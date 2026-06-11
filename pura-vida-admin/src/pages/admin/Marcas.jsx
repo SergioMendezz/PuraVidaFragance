@@ -2,21 +2,21 @@ import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import { getMarcas, postMarca, putMarca, deleteMarca } from "../../services/api";
+import { getMarcas, postMarca, putMarca, deleteMarca, activarMarca } from "../../services/api";
 
 const empty = { nombre: "", paisOrigen: "", descripcion: "", logoUrl: "" };
+const FILTROS = ["Todos", "Activos", "Inactivos"];
 
 export default function Marcas() {
   const { onMenuClick } = useOutletContext();
   const [marcas, setMarcas]     = useState([]);
   const [loading, setLoading]   = useState(true);
   const [modal, setModal]       = useState(false);
-  const [confirm, setConfirm]   = useState(null);
   const [editing, setEditing]   = useState(null);
   const [form, setForm]         = useState(empty);
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState("");
+  const [filtro, setFiltro]     = useState("Activos");
 
   const load = async () => {
     try {
@@ -28,35 +28,39 @@ export default function Marcas() {
 
   useEffect(() => { load(); }, []);
 
+  const visibles = marcas.filter(m =>
+    filtro === "Todos" ? true : filtro === "Activos" ? m.activo : !m.activo
+  );
+
   const openNew  = () => { setEditing(null); setForm(empty); setError(""); setModal(true); };
-  const openEdit = (m) => { setEditing(m); setForm({ nombre: m.nombre, paisOrigen: m.paisOrigen ?? "", descripcion: m.descripcion ?? "", logoUrl: m.logoUrl ?? "" }); setError(""); setModal(true); };
+  const openEdit = (m) => {
+    setEditing(m);
+    setForm({ nombre: m.nombre, paisOrigen: m.paisOrigen ?? "", descripcion: m.descripcion ?? "", logoUrl: m.logoUrl ?? "" });
+    setError(""); setModal(true);
+  };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const handleSave = async (e) => {
-    e.preventDefault();
-    setSaving(true); setError("");
+    e.preventDefault(); setSaving(true); setError("");
     try {
       if (editing) await putMarca(editing.id, form);
       else         await postMarca(form);
-      closeModal();
-      await load();
-    } catch (err) {
-      setError(err.response?.data ?? "Error al guardar");
-    } finally { setSaving(false); }
+      closeModal(); await load();
+    } catch (err) { setError(err.response?.data ?? "Error al guardar"); }
+    finally { setSaving(false); }
   };
 
-  const handleDelete = async (id) => {
-    try { await deleteMarca(id); await load(); }
-    catch { }
-    finally { setConfirm(null); }
+  const handleToggle = async (m) => {
+    try {
+      if (m.activo) await deleteMarca(m.id);
+      else          await activarMarca(m.id);
+      await load();
+    } catch {}
   };
 
   return (
     <div className="flex flex-col h-full">
-      <Topbar
-        title="Marcas"
-        subtitle="Gestión de marcas"
-        onMenuClick={onMenuClick}
+      <Topbar title="Marcas" subtitle="Gestión de marcas" onMenuClick={onMenuClick}
         actions={
           <button onClick={openNew} className="flex items-center gap-2 bg-[#1B1B1B] text-white px-5 py-2.5 text-xs tracking-widest uppercase hover:bg-black transition-colors">
             <i className="ti ti-plus text-sm" /> Nueva marca
@@ -65,43 +69,54 @@ export default function Marcas() {
       />
 
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-        {loading ? (
-          <p className="text-sm text-gray-400 tracking-wide">Cargando...</p>
-        ) : (
+        {loading ? <p className="text-sm text-gray-400 tracking-wide">Cargando...</p> : (
           <div className="bg-white border border-[#EBEBEB]">
             <div className="px-5 py-4 border-b border-[#F0F0F0] flex items-center justify-between">
               <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">Marcas registradas</span>
-              <span className="text-xs text-gray-400">{marcas.length} marcas</span>
+              <div className="flex items-center gap-1">
+                {FILTROS.map(f => (
+                  <button key={f} onClick={() => setFiltro(f)}
+                    className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
+                    {f}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre","País","Descripción","Acciones"].map(h => (
+                    {["Nombre", "País", "Descripción", "Estado", "Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {marcas.map((m) => (
-                    <tr key={m.id} className="border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA]">
+                  {visibles.map((m) => (
+                    <tr key={m.id} className={`border-b border-[#F7F7F7] last:border-0 hover:bg-[#FAFAFA] ${!m.activo ? "opacity-50" : ""}`}>
                       <td className="px-5 py-3.5 text-sm font-medium text-[#1B1B1B]">{m.nombre}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500">{m.paisOrigen ?? "—"}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-500 max-w-xs truncate">{m.descripcion ?? "—"}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`text-[10px] tracking-widest uppercase px-2 py-1 ${m.activo ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-400"}`}>
+                          {m.activo ? "Activo" : "Inactivo"}
+                        </span>
+                      </td>
                       <td className="px-5 py-3.5">
                         <div className="flex gap-2">
                           <button onClick={() => openEdit(m)} className="border border-[#EBEBEB] p-1.5 text-gray-400 hover:text-[#1B1B1B] hover:bg-gray-50 transition-all">
                             <i className="ti ti-edit text-sm" />
                           </button>
-                          <button onClick={() => setConfirm(m.id)} className="border border-[#EBEBEB] p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
-                            <i className="ti ti-trash text-sm" />
+                          <button onClick={() => handleToggle(m)}
+                            className={`border p-1.5 transition-all ${m.activo ? "border-[#EBEBEB] text-gray-400 hover:text-red-500 hover:bg-red-50" : "border-[#EBEBEB] text-gray-400 hover:text-green-600 hover:bg-green-50"}`}>
+                            <i className={`ti ${m.activo ? "ti-eye-off" : "ti-eye"} text-sm`} />
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
-                  {marcas.length === 0 && (
-                    <tr><td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-400">No hay marcas registradas</td></tr>
+                  {visibles.length === 0 && (
+                    <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">No hay marcas {filtro.toLowerCase()}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -114,48 +129,30 @@ export default function Marcas() {
         <Modal title={editing ? "Editar marca" : "Nueva marca"} onClose={closeModal}>
           <form onSubmit={handleSave} className="space-y-4">
             {[
-              { label: "Nombre",      key: "nombre",      required: true  },
-              { label: "País origen", key: "paisOrigen",  required: false },
-              { label: "Logo URL",    key: "logoUrl",     required: false },
+              { label: "Nombre",      key: "nombre",     required: true  },
+              { label: "País origen", key: "paisOrigen", required: false },
+              { label: "Logo URL",    key: "logoUrl",    required: false },
             ].map(({ label, key, required }) => (
               <div key={key}>
                 <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">{label}</label>
-                <input
-                  required={required}
-                  value={form[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                  className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors"
-                />
+                <input required={required} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors" />
               </div>
             ))}
             <div>
               <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">Descripción</label>
-              <textarea
-                rows={3}
-                value={form.descripcion}
-                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none"
-              />
+              <textarea rows={3} value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors resize-none" />
             </div>
             {error && <p className="text-xs text-red-500">{error}</p>}
             <div className="flex gap-3 pt-2">
-              <button type="button" onClick={closeModal} className="flex-1 border border-[#EBEBEB] py-2.5 text-xs tracking-widest uppercase text-gray-500 hover:bg-gray-50 transition-all">
-                Cancelar
-              </button>
+              <button type="button" onClick={closeModal} className="flex-1 border border-[#EBEBEB] py-2.5 text-xs tracking-widest uppercase text-gray-500 hover:bg-gray-50 transition-all">Cancelar</button>
               <button type="submit" disabled={saving} className="flex-1 bg-[#1B1B1B] text-white py-2.5 text-xs tracking-widest uppercase hover:bg-black transition-all disabled:opacity-50">
                 {saving ? "Guardando..." : "Guardar"}
               </button>
             </div>
           </form>
         </Modal>
-      )}
-
-      {confirm && (
-        <ConfirmDialog
-          message="¿Eliminar esta marca? Los perfumes asociados quedarán sin marca."
-          onConfirm={() => handleDelete(confirm)}
-          onCancel={() => setConfirm(null)}
-        />
       )}
     </div>
   );

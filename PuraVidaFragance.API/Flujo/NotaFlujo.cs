@@ -21,5 +21,6 @@ namespace Flujo
         public Task<IEnumerable<NotaPerfumeResponse>> ObtenerPorPerfume(Guid IdPerfume) => _notaDA.ObtenerPorPerfume(IdPerfume);
         public Task<Guid> AgregarAPerfume(NotaPerfumeRequest request) => _notaDA.AgregarAPerfume(request);
         public Task<Guid> EliminarDePerfume(Guid IdPerfume, Guid IdNota) => _notaDA.EliminarDePerfume(IdPerfume, IdNota);
+        public Task<Guid> Activar(Guid Id) => _notaDA.Activar(Id);
     }
 }

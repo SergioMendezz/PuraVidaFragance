@@ -18,5 +18,6 @@ namespace Flujo
         public Task<Guid> Agregar(BodySprayRequest bodySpray) => _bodySprayDA.Agregar(bodySpray);
         public Task<Guid> Editar(Guid Id, BodySprayRequest bodySpray) => _bodySprayDA.Editar(Id, bodySpray);
         public Task<Guid> Eliminar(Guid Id) => _bodySprayDA.Eliminar(Id);
+        public Task<Guid> Activar(Guid Id) => _bodySprayDA.Activar(Id);
     }
 }

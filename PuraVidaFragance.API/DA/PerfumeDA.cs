@@ -112,6 +112,15 @@ namespace DA
 
             return resultado;
         }
+
+        public async Task<Guid> Activar(Guid Id)
+        {
+            await VerificarExiste(Id);
+            return await _sqlConnection.ExecuteScalarAsync<Guid>(
+                "ActivarPerfume",
+                new { Id },
+                commandType: System.Data.CommandType.StoredProcedure);
+        }
         #endregion
 
         #region Helpers

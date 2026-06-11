@@ -9,5 +9,6 @@ namespace Abstracciones.Interfaces.DA
         Task<Guid> Agregar(MarcaRequest marca);
         Task<Guid> Editar(Guid Id, MarcaRequest marca);
         Task<Guid> Eliminar(Guid Id);
+        Task<Guid> Activar(Guid Id);
     }
 }

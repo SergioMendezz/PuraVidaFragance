@@ -18,5 +18,6 @@ namespace Flujo
         public Task<Guid> Agregar(SetRequest set) => _setDA.Agregar(set);
         public Task<Guid> Editar(Guid Id, SetRequest set) => _setDA.Editar(Id, set);
         public Task<Guid> Eliminar(Guid Id) => _setDA.Eliminar(Id);
+        public Task<Guid> Activar(Guid Id) => _setDA.Activar(Id);
     }
 }

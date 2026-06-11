@@ -9,5 +9,6 @@ namespace Abstracciones.Interfaces.DA
         Task<Guid> Agregar(SetRequest set);
         Task<Guid> Editar(Guid Id, SetRequest set);
         Task<Guid> Eliminar(Guid Id);
+        Task<Guid> Activar(Guid Id);
     }
 }

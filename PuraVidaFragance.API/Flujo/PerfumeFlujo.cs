@@ -18,5 +18,6 @@ namespace Flujo
         public Task<Guid> Agregar(PerfumeRequest perfume) => _perfumeDA.Agregar(perfume);
         public Task<Guid> Editar(Guid Id, PerfumeRequest perfume) => _perfumeDA.Editar(Id, perfume);
         public Task<Guid> Eliminar(Guid Id) => _perfumeDA.Eliminar(Id);
+        public Task<Guid> Activar(Guid Id) => _perfumeDA.Activar(Id);
     }
 }

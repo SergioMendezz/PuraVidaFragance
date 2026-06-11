@@ -2,7 +2,6 @@
 
 namespace Abstracciones.Interfaces.DA
 {
-
     public interface INotaDA
     {
         Task<IEnumerable<NotaResponse>> Obtener();
@@ -10,8 +9,9 @@ namespace Abstracciones.Interfaces.DA
         Task<Guid> Agregar(NotaRequest nota);
         Task<Guid> Editar(Guid Id, NotaRequest nota);
         Task<Guid> Eliminar(Guid Id);
+        Task<Guid> Activar(Guid Id);
         Task<IEnumerable<NotaPerfumeResponse>> ObtenerPorPerfume(Guid IdPerfume);
-        Task<Guid> AgregarAPerfume(NotaPerfumeRequest request);
+        Task<Guid> AgregarAPerfume(NotaPerfumeRequest notaPerfume);
         Task<Guid> EliminarDePerfume(Guid IdPerfume, Guid IdNota);
     }
 }
