@@ -31,7 +31,7 @@ namespace DA
                     new { IdPerfume = perfume.Id },
                     commandType: System.Data.CommandType.StoredProcedure)).ToList();
 
-                perfume.Notas = (await _sqlConnection.QueryAsync<NotaResponse>(
+                perfume.Notas = (await _sqlConnection.QueryAsync<NotaPerfumeResponse>(
                     "ObtenerNotasPorPerfume",
                     new { IdPerfume = perfume.Id },
                     commandType: System.Data.CommandType.StoredProcedure)).ToList();
@@ -54,7 +54,7 @@ namespace DA
                     new { IdPerfume = perfume.Id },
                     commandType: System.Data.CommandType.StoredProcedure)).ToList();
 
-                perfume.Notas = (await _sqlConnection.QueryAsync<NotaResponse>(
+                perfume.Notas = (await _sqlConnection.QueryAsync<NotaPerfumeResponse>(
                     "ObtenerNotasPorPerfume",
                     new { IdPerfume = perfume.Id },
                     commandType: System.Data.CommandType.StoredProcedure)).ToList();

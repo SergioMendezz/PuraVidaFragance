@@ -27,6 +27,6 @@ namespace Abstracciones.Modelos
         public string Marca { get; set; }
         public bool Activo { get; set; }
         public List<VarianteResponse> Variantes { get; set; } = new();
-        public List<NotaResponse> Notas { get; set; } = new();
+        public List<NotaPerfumeResponse> Notas { get; set; } = new();
     }
 }

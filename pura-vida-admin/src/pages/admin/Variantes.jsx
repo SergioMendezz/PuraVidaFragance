@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
 import ConfirmDialog from "../../components/ConfirmDialog";
-import { getPerfumes, getVariantesPorPerfume, postVariante, putVariante, deleteVariante } from "../../services/api";
+import { getPerfumes, getMarcas, getVariantesPorPerfume, postVariante, putVariante, deleteVariante } from "../../services/api";
 
 const empty = { idPerfume: "", tipo: "Completo", mililitros: "", precio: "", stock: "" };
 
 export default function Variantes() {
   const { onMenuClick } = useOutletContext();
   const [perfumes, setPerfumes]   = useState([]);
+  const [marcas, setMarcas]       = useState([]);
   const [variantes, setVariantes] = useState([]);
   const [selected, setSelected]   = useState("");
+  const [marcaFiltro, setMarcaFiltro] = useState("");
   const [loading, setLoading]     = useState(false);
   const [modal, setModal]         = useState(false);
   const [confirm, setConfirm]     = useState(null);
@@ -21,11 +23,15 @@ export default function Variantes() {
   const [error, setError]         = useState("");
 
   useEffect(() => {
-    getPerfumes().then(r => {
-    const data = Array.isArray(r.data) ? r.data : [];
-    setPerfumes(data);
-    if (data.length) setSelected(data[0].id);
-  }).catch(() => {});
+    Promise.all([getPerfumes(), getMarcas()])
+      .then(([pRes, mRes]) => {
+        const pData = Array.isArray(pRes.data) ? pRes.data : [];
+        const mData = Array.isArray(mRes.data) ? mRes.data : [];
+        setPerfumes(pData);
+        setMarcas(mData.filter(m => m.activo));
+        if (pData.length) setSelected(pData[0].id);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -37,13 +43,33 @@ export default function Variantes() {
       .finally(() => setLoading(false));
   }, [selected]);
 
-  const openNew  = () => { setEditing(null); setForm({ ...empty, idPerfume: selected }); setError(""); setModal(true); };
-  const openEdit = (v) => { setEditing(v); setForm({ idPerfume: selected, tipo: v.tipo, mililitros: v.mililitros, precio: v.precio, stock: v.stock }); setError(""); setModal(true); };
+  // Perfumes filtrados por marca seleccionada
+  const perfumesFiltrados = useMemo(() =>
+    marcaFiltro
+      ? perfumes.filter(p => p.idMarca === marcaFiltro)
+      : perfumes,
+    [perfumes, marcaFiltro]
+  );
+
+  // Cuando cambia el filtro de marca, seleccionar el primer perfume de esa marca
+  const handleMarcaChange = (idMarca) => {
+    setMarcaFiltro(idMarca);
+    const primero = idMarca
+      ? perfumes.find(p => p.idMarca === idMarca)
+      : perfumes[0];
+    if (primero) setSelected(primero.id);
+    else setSelected("");
+  };
+
+  const openNew    = () => { setEditing(null); setForm({ ...empty, idPerfume: selected }); setError(""); setModal(true); };
+  const openEdit   = (v) => { setEditing(v); setForm({ idPerfume: selected, tipo: v.tipo, mililitros: v.mililitros, precio: v.precio, stock: v.stock }); setError(""); setModal(true); };
   const closeModal = () => { setModal(false); setEditing(null); };
 
   const reload = () => {
     if (!selected) return;
-    getVariantesPorPerfume(selected).then(r => setVariantes(Array.isArray(r.data) ? r.data : [])).catch(() => {});
+    getVariantesPorPerfume(selected)
+      .then(r => setVariantes(Array.isArray(r.data) ? r.data : []))
+      .catch(() => {});
   };
 
   const handleSave = async (e) => {
@@ -63,6 +89,7 @@ export default function Variantes() {
   };
 
   const perfumeName = perfumes.find(p => p.id === selected)?.nombre ?? "";
+  const marcaNombre = perfumes.find(p => p.id === selected)?.marca ?? "";
 
   return (
     <div className="flex flex-col h-full">
@@ -71,27 +98,68 @@ export default function Variantes() {
         subtitle="Completos y decants por perfume"
         onMenuClick={onMenuClick}
         actions={
-          <button onClick={openNew} disabled={!selected} className="flex items-center gap-2 bg-[#1B1B1B] text-white px-5 py-2.5 text-xs tracking-widest uppercase hover:bg-black transition-colors disabled:opacity-40">
+          <button onClick={openNew} disabled={!selected}
+            className="flex items-center gap-2 bg-[#1B1B1B] text-white px-5 py-2.5 text-xs tracking-widest uppercase hover:bg-black transition-colors disabled:opacity-40">
             <i className="ti ti-plus text-sm" /> Nueva variante
           </button>
         }
       />
 
       <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-        <div className="mb-5">
-          <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-2">Perfume</label>
-          <select value={selected} onChange={(e) => setSelected(e.target.value)}
-            className="border border-[#EBEBEB] px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors w-full max-w-sm">
-            {perfumes.map(p => <option key={p.id} value={p.id}>{p.nombre} — {p.marca}</option>)}
-          </select>
+
+        {/* Filtros de selección */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          {/* Filtro marca */}
+          <div className="flex-1">
+            <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-2">
+              Marca
+            </label>
+            <select value={marcaFiltro} onChange={e => handleMarcaChange(e.target.value)}
+              className="border border-[#EBEBEB] px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors w-full">
+              <option value="">Todas las marcas</option>
+              {marcas.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+            </select>
+          </div>
+
+          {/* Selector perfume */}
+          <div className="flex-1">
+            <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-2">
+              Perfume
+              {marcaFiltro && (
+                <span className="ml-2 text-gray-300 normal-case tracking-normal">
+                  ({perfumesFiltrados.length} resultados)
+                </span>
+              )}
+            </label>
+            <select value={selected} onChange={e => setSelected(e.target.value)}
+              className="border border-[#EBEBEB] px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-[#1B1B1B] transition-colors w-full">
+              {perfumesFiltrados.length === 0 && (
+                <option value="">Sin perfumes para esta marca</option>
+              )}
+              {perfumesFiltrados.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.nombre}{!marcaFiltro ? ` — ${p.marca}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {loading ? (
           <p className="text-sm text-gray-400">Cargando...</p>
         ) : (
           <div className="bg-white border border-[#EBEBEB]">
-            <div className="px-5 py-4 border-b border-[#F0F0F0] flex justify-between">
-              <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">{perfumeName}</span>
+            <div className="px-5 py-4 border-b border-[#F0F0F0] flex justify-between items-center">
+              <div>
+                <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">
+                  {perfumeName}
+                </span>
+                {marcaNombre && (
+                  <span className="ml-2 text-[10px] tracking-[2px] uppercase text-gray-400">
+                    — {marcaNombre}
+                  </span>
+                )}
+              </div>
               <span className="text-xs text-gray-400">{variantes.length} variantes</span>
             </div>
             <div className="overflow-x-auto">
@@ -148,13 +216,14 @@ export default function Variantes() {
               </select>
             </div>
             {[
-              { label: "Mililitros", key: "mililitros", type: "number", step: "0.1" },
-              { label: "Precio (₡)", key: "precio",     type: "number", step: "1"   },
-              { label: "Stock",      key: "stock",      type: "number", step: "1"   },
-            ].map(({ label, key, type, step }) => (
+              { label: "Mililitros", key: "mililitros", step: "0.1" },
+              { label: "Precio (₡)", key: "precio",     step: "1"   },
+              { label: "Stock",      key: "stock",      step: "1"   },
+            ].map(({ label, key, step }) => (
               <div key={key}>
                 <label className="block text-[10px] tracking-[2px] uppercase text-gray-400 mb-1.5">{label}</label>
-                <input required type={type} step={step} min="0" value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                <input required type="number" step={step} min="0" value={form[key]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                   className="w-full border border-[#EBEBEB] px-3 py-2.5 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors" />
               </div>
             ))}

@@ -9,7 +9,7 @@ namespace Abstracciones.Modelos
         public string Nombre { get; set; }
 
         [Required(ErrorMessage = "El color es requerido")]
-        [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "El color debe ser un hexadecimal válido, ej: #E8B84B")]
+        [RegularExpression(@"^#[0-9A-Fa-f]{6}$", ErrorMessage = "El color debe ser un hexadecimal válido")]
         public string ColorHex { get; set; }
     }
 
