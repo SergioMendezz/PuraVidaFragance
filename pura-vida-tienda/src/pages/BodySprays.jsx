@@ -4,17 +4,16 @@ import BodySprayModal from "../components/BodySprayModal";
 import { getBodySprays } from "../services/api";
 
 export default function BodySprays() {
-  const [sprays, setSprays]   = useState([]);
+  const [sprays, setSprays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     getBodySprays()
-      .then(r => setSprays(Array.isArray(r.data) ? r.data : []))
+      .then(r => setSprays(Array.isArray(r.data) ? r.data.filter(s => s.activo) : []))
       .catch(() => setSprays([]))
       .finally(() => setLoading(false));
   }, []);
-
   const renderTarjeta = (s) => (
     <div key={s.id}
       className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"

@@ -4,17 +4,16 @@ import SetModal from "../components/SetModal";
 import { getSets } from "../services/api";
 
 export default function Sets() {
-  const [sets, setSets]       = useState([]);
+  const [sets, setSets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     getSets()
-      .then(r => setSets(Array.isArray(r.data) ? r.data : []))
+      .then(r => setSets(Array.isArray(r.data) ? r.data.filter(s => s.activo) : []))
       .catch(() => setSets([]))
       .finally(() => setLoading(false));
   }, []);
-
   const renderTarjeta = (s) => (
     <div key={s.id}
       className="bg-white p-5 cursor-pointer hover:bg-[#FAFAFA] transition-colors group"

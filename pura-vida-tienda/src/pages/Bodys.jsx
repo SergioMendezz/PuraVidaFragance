@@ -4,13 +4,13 @@ import BodyModal from "../components/BodyModal";
 import { getBodys } from "../services/api";
 
 export default function Bodys() {
-  const [bodys, setBodys]     = useState([]);
+  const [bodys, setBodys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     getBodys()
-      .then(r => setBodys(Array.isArray(r.data) ? r.data : []))
+      .then(r => setBodys(Array.isArray(r.data) ? r.data.filter(b => b.activo) : []))
       .catch(() => setBodys([]))
       .finally(() => setLoading(false));
   }, []);

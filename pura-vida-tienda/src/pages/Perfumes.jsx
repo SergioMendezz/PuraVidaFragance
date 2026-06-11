@@ -6,12 +6,12 @@ import { getPerfumes } from "../services/api";
 
 export default function Perfumes() {
   const [perfumes, setPerfumes] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     getPerfumes()
-      .then(r => setPerfumes(Array.isArray(r.data) ? r.data : []))
+      .then(r => setPerfumes(Array.isArray(r.data) ? r.data.filter(p => p.activo) : []))
       .catch(() => setPerfumes([]))
       .finally(() => setLoading(false));
   }, []);
@@ -37,9 +37,9 @@ export default function Perfumes() {
 
   const renderTarjeta = (p) => {
     const varPrincipal = getPrecioMin(p);
-    const notas        = getNotasPrincipales(p);
-    const tieneDecant  = (p.variantes ?? []).some(v => v.tipo === "Decant");
-    const agotado      = sinStock(p);
+    const notas = getNotasPrincipales(p);
+    const tieneDecant = (p.variantes ?? []).some(v => v.tipo === "Decant");
+    const agotado = sinStock(p);
 
     return (
       <div key={p.id}
@@ -96,14 +96,14 @@ export default function Perfumes() {
   };
 
   return (
-  <CatalogoPagina
-    titulo="Perfumes"
-    subtitulo="Colección"
-    productos={perfumesConPrecio}
-    loading={loading}
-    conFiltroGenero={true}
-    renderTarjeta={renderTarjeta}
-    renderModal={() => selected && <PerfumeModal perfume={selected} onClose={() => setSelected(null)} />}
-  />
-);
+    <CatalogoPagina
+      titulo="Perfumes"
+      subtitulo="Colección"
+      productos={perfumesConPrecio}
+      loading={loading}
+      conFiltroGenero={true}
+      renderTarjeta={renderTarjeta}
+      renderModal={() => selected && <PerfumeModal perfume={selected} onClose={() => setSelected(null)} />}
+    />
+  );
 }
