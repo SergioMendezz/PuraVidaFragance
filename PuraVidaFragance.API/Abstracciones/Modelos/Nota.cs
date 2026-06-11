@@ -18,9 +18,9 @@ namespace Abstracciones.Modelos
     public class NotaResponse : NotaBase
     {
         public Guid Id { get; set; }
+        public bool Activo { get; set; }
     }
 
-    // Respuesta al obtener notas de un perfume (incluye intensidad)
     public class NotaPerfumeResponse
     {
         public Guid IdNota { get; set; }
@@ -29,7 +29,6 @@ namespace Abstracciones.Modelos
         public int Intensidad { get; set; }
     }
 
-    // Request para asignar una nota a un perfume
     public class NotaPerfumeRequest
     {
         [Required(ErrorMessage = "El IdPerfume es requerido")]
@@ -42,4 +41,3 @@ namespace Abstracciones.Modelos
         public int Intensidad { get; set; }
     }
 }
-
