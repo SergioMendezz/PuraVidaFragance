@@ -9,15 +9,15 @@ const FILTROS = ["Todos", "Activos", "Inactivos"];
 
 export default function Bodys() {
   const { onMenuClick } = useOutletContext();
-  const [bodys, setBodys]     = useState([]);
-  const [marcas, setMarcas]   = useState([]);
+  const [bodys, setBodys] = useState([]);
+  const [marcas, setMarcas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal]     = useState(false);
+  const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm]       = useState(empty);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState("");
-  const [filtro, setFiltro]   = useState("Activos");
+  const [form, setForm] = useState(empty);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [filtro, setFiltro] = useState("Activos");
 
   const load = async () => {
     try {
@@ -30,11 +30,13 @@ export default function Bodys() {
 
   useEffect(() => { load(); }, []);
 
-  const visibles = bodys.filter(b =>
-    filtro === "Todos" ? true : filtro === "Activos" ? b.activo : !b.activo
-  );
+  const [marcaAdminFiltro, setMarcaAdminFiltro] = useState("");
 
-  const openNew  = () => { setEditing(null); setForm(empty); setError(""); setModal(true); };
+  const visibles = bodys
+    .filter(b => filtro === "Todos" ? true : filtro === "Activos" ? b.activo : !b.activo)
+    .filter(b => !marcaAdminFiltro || b.idMarca === marcaAdminFiltro);
+
+  const openNew = () => { setEditing(null); setForm(empty); setError(""); setModal(true); };
   const openEdit = (b) => {
     setEditing(b);
     setForm({ nombre: b.nombre, idMarca: b.idMarca ?? "", mililitros: b.mililitros, precio: b.precio, descripcion: b.descripcion ?? "", imagenUrl: b.imagenUrl ?? "" });
@@ -47,7 +49,7 @@ export default function Bodys() {
     try {
       const payload = { ...form, idMarca: form.idMarca || null, mililitros: parseFloat(form.mililitros), precio: parseFloat(form.precio) };
       if (editing) await putBody(editing.id, payload);
-      else         await postBody(payload);
+      else await postBody(payload);
       closeModal(); await load();
     } catch (err) { setError(err.response?.data ?? "Error al guardar"); }
     finally { setSaving(false); }
@@ -56,9 +58,9 @@ export default function Bodys() {
   const handleToggle = async (b) => {
     try {
       if (b.activo) await deleteBody(b.id);
-      else          await activarBody(b.id);
+      else await activarBody(b.id);
       await load();
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -76,20 +78,27 @@ export default function Bodys() {
           <div className="bg-white border border-[#EBEBEB]">
             <div className="px-5 py-4 border-b border-[#F0F0F0] flex items-center justify-between">
               <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">Bodys registrados</span>
-              <div className="flex items-center gap-1">
-                {FILTROS.map(f => (
-                  <button key={f} onClick={() => setFiltro(f)}
-                    className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
-                    {f}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3 ml-auto">
+                <select value={marcaAdminFiltro} onChange={e => setMarcaAdminFiltro(e.target.value)}
+                  className="border border-[#EBEBEB] px-3 py-1 text-[11px] text-gray-500 bg-white outline-none focus:border-[#1B1B1B] transition-colors">
+                  <option value="">Todas las marcas</option>
+                  {marcas.filter(m => m.activo).map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                </select>
+                <div className="flex items-center gap-1">
+                  {FILTROS.map(f => (
+                    <button key={f} onClick={() => setFiltro(f)}
+                      className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre","Marca","Mililitros","Precio","Estado","Acciones"].map(h => (
+                    {["Nombre", "Marca", "Mililitros", "Precio", "Estado", "Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>

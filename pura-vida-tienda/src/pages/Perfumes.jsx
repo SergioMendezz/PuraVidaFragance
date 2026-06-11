@@ -96,13 +96,14 @@ export default function Perfumes() {
   };
 
   return (
-    <CatalogoPagina
-      titulo="Perfumes"
-      subtitulo="Colección"
-      productos={perfumesConPrecio}
-      loading={loading}
-      renderTarjeta={renderTarjeta}
-      renderModal={() => selected && <PerfumeModal perfume={selected} onClose={() => setSelected(null)} />}
-    />
-  );
+  <CatalogoPagina
+    titulo="Perfumes"
+    subtitulo="Colección"
+    productos={perfumesConPrecio}
+    loading={loading}
+    conFiltroGenero={true}
+    renderTarjeta={renderTarjeta}
+    renderModal={() => selected && <PerfumeModal perfume={selected} onClose={() => setSelected(null)} />}
+  />
+);
 }

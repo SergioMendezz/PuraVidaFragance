@@ -4,43 +4,45 @@ import Topbar from "../../components/Topbar";
 import Modal from "../../components/Modal";
 import { getSets, postSet, putSet, deleteSet, activarSet, getPerfumes, getBodys, getBodySprays, getMarcas } from "../../services/api";
 
-const emptySet  = { nombre: "", idMarca: "", precio: "", descripcion: "", imagenUrl: "" };
+const emptySet = { nombre: "", idMarca: "", precio: "", descripcion: "", imagenUrl: "" };
 const emptyItem = { tipoProducto: "Perfume", idProducto: "", nombreItem: "", cantidad: 1, descripcion: "" };
 const FILTROS = ["Todos", "Activos", "Inactivos"];
 
 export default function Sets() {
   const { onMenuClick } = useOutletContext();
-  const [sets, setSets]         = useState([]);
+  const [sets, setSets] = useState([]);
   const [perfumes, setPerfumes] = useState([]);
-  const [bodys, setBodys]       = useState([]);
-  const [sprays, setSprays]     = useState([]);
-  const [marcas, setMarcas]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [modal, setModal]       = useState(false);
-  const [editing, setEditing]   = useState(null);
-  const [form, setForm]         = useState(emptySet);
-  const [items, setItems]       = useState([]);
-  const [saving, setSaving]     = useState(false);
-  const [error, setError]       = useState("");
-  const [filtro, setFiltro]     = useState("Activos");
+  const [bodys, setBodys] = useState([]);
+  const [sprays, setSprays] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(emptySet);
+  const [items, setItems] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [filtro, setFiltro] = useState("Activos");
 
   const load = async () => {
     try {
       const [sRes, pRes, bRes, spRes, mRes] = await Promise.all([getSets(), getPerfumes(), getBodys(), getBodySprays(), getMarcas()]);
-      setSets(Array.isArray(sRes.data)  ? sRes.data  : []);
+      setSets(Array.isArray(sRes.data) ? sRes.data : []);
       setPerfumes(Array.isArray(pRes.data) ? pRes.data : []);
-      setBodys(Array.isArray(bRes.data)    ? bRes.data : []);
-      setSprays(Array.isArray(spRes.data)  ? spRes.data : []);
-      setMarcas(Array.isArray(mRes.data)   ? mRes.data : []);
+      setBodys(Array.isArray(bRes.data) ? bRes.data : []);
+      setSprays(Array.isArray(spRes.data) ? spRes.data : []);
+      setMarcas(Array.isArray(mRes.data) ? mRes.data : []);
     } catch { setSets([]); }
     finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
 
-  const visibles = sets.filter(s =>
-    filtro === "Todos" ? true : filtro === "Activos" ? s.activo : !s.activo
-  );
+  const [marcaAdminFiltro, setMarcaAdminFiltro] = useState("");
+
+  const visibles = sets
+    .filter(s => filtro === "Todos" ? true : filtro === "Activos" ? s.activo : !s.activo)
+    .filter(s => !marcaAdminFiltro || s.idMarca === marcaAdminFiltro);
 
   const openNew = () => { setEditing(null); setForm(emptySet); setItems([]); setError(""); setModal(true); };
   const openEdit = (s) => {
@@ -52,13 +54,13 @@ export default function Sets() {
   const closeModal = () => { setModal(false); setEditing(null); setItems([]); };
 
   const opcionesPorTipo = (tipo) => {
-    if (tipo === "Perfume")   return perfumes.filter(p => p.activo);
-    if (tipo === "Body")      return bodys.filter(b => b.activo);
+    if (tipo === "Perfume") return perfumes.filter(p => p.activo);
+    if (tipo === "Body") return bodys.filter(b => b.activo);
     if (tipo === "BodySpray") return sprays.filter(s => s.activo);
     return [];
   };
 
-  const addItem    = () => setItems([...items, { ...emptyItem }]);
+  const addItem = () => setItems([...items, { ...emptyItem }]);
   const removeItem = (i) => setItems(items.filter((_, idx) => idx !== i));
   const updateItem = (i, key, val) => {
     const next = [...items];
@@ -75,7 +77,7 @@ export default function Sets() {
         items: items.map(it => ({ tipoProducto: it.tipoProducto, idProducto: it.idProducto || null, nombreItem: it.nombreItem || null, cantidad: parseInt(it.cantidad), descripcion: it.descripcion || null })),
       };
       if (editing) await putSet(editing.id, payload);
-      else         await postSet(payload);
+      else await postSet(payload);
       closeModal(); await load();
     } catch (err) { setError(err.response?.data ?? "Error al guardar"); }
     finally { setSaving(false); }
@@ -84,9 +86,9 @@ export default function Sets() {
   const handleToggle = async (s) => {
     try {
       if (s.activo) await deleteSet(s.id);
-      else          await activarSet(s.id);
+      else await activarSet(s.id);
       await load();
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -104,20 +106,27 @@ export default function Sets() {
           <div className="bg-white border border-[#EBEBEB]">
             <div className="px-5 py-4 border-b border-[#F0F0F0] flex items-center justify-between">
               <span className="text-[10px] tracking-[3px] uppercase font-medium text-[#1B1B1B]">Sets registrados</span>
-              <div className="flex items-center gap-1">
-                {FILTROS.map(f => (
-                  <button key={f} onClick={() => setFiltro(f)}
-                    className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
-                    {f}
-                  </button>
-                ))}
+              <div className="flex items-center gap-3 ml-auto">
+                <select value={marcaAdminFiltro} onChange={e => setMarcaAdminFiltro(e.target.value)}
+                  className="border border-[#EBEBEB] px-3 py-1 text-[11px] text-gray-500 bg-white outline-none focus:border-[#1B1B1B] transition-colors">
+                  <option value="">Todas las marcas</option>
+                  {marcas.filter(m => m.activo).map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                </select>
+                <div className="flex items-center gap-1">
+                  {FILTROS.map(f => (
+                    <button key={f} onClick={() => setFiltro(f)}
+                      className={`px-3 py-1 text-[10px] tracking-[2px] uppercase transition-colors ${filtro === f ? "bg-[#1B1B1B] text-white" : "text-gray-400 hover:text-[#1B1B1B]"}`}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#F0F0F0]">
-                    {["Nombre","Marca","Precio","Items","Estado","Acciones"].map(h => (
+                    {["Nombre", "Marca", "Precio", "Items", "Estado", "Acciones"].map(h => (
                       <th key={h} className="text-left px-5 py-3 text-[10px] tracking-[2px] uppercase text-gray-400 font-medium">{h}</th>
                     ))}
                   </tr>
@@ -219,7 +228,7 @@ export default function Sets() {
                         <label className="block text-[9px] tracking-[2px] uppercase text-gray-400 mb-1">Tipo</label>
                         <select value={item.tipoProducto} onChange={(e) => updateItem(i, "tipoProducto", e.target.value)}
                           className="w-full border border-[#EBEBEB] px-2 py-2 text-sm focus:outline-none focus:border-[#1B1B1B] transition-colors bg-white">
-                          {["Perfume","Body","BodySpray","Extra"].map(t => <option key={t}>{t}</option>)}
+                          {["Perfume", "Body", "BodySpray", "Extra"].map(t => <option key={t}>{t}</option>)}
                         </select>
                       </div>
                       <div>

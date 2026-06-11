@@ -2,36 +2,34 @@ import { useState, useMemo } from "react";
 import Navbar from "./Navbar";
 import FloatingButtons from "./FloatingButtons";
 
-export default function CatalogoPagina({ titulo, subtitulo, productos, loading, renderModal, renderTarjeta }) {
-  const [search, setSearch]       = useState("");
-  const [marcaFiltro, setMarca]   = useState("");
-  const [precioMax, setPrecioMax] = useState("");
+export default function CatalogoPagina({ titulo, subtitulo, productos, loading, renderModal, renderTarjeta, conFiltroGenero = false }) {
+  const [search, setSearch]         = useState("");
+  const [marcaFiltro, setMarca]     = useState("");
+  const [generoFiltro, setGenero]   = useState("");
+  const [precioMax, setPrecioMax]   = useState("");
 
-  // Marcas únicas
   const marcas = useMemo(() =>
     [...new Map(productos.filter(p => p.marca).map(p => [p.marca, p.marca])).values()].sort(),
     [productos]
   );
 
-  // Precio máximo real
   const maxPrecio = useMemo(() =>
     productos.length > 0 ? Math.max(...productos.map(p => Number(p.precio))) : 0,
     [productos]
   );
 
-  // Filtrado
   const filtrados = useMemo(() =>
     productos.filter(p => {
-      const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-                          (p.marca ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchMarca  = !marcaFiltro || p.marca === marcaFiltro;
-      const matchPrecio = !precioMax   || Number(p.precio) <= Number(precioMax);
-      return matchSearch && matchMarca && matchPrecio;
+      const matchSearch  = p.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                           (p.marca ?? "").toLowerCase().includes(search.toLowerCase());
+      const matchMarca   = !marcaFiltro  || p.marca === marcaFiltro;
+      const matchGenero  = !generoFiltro || p.genero === generoFiltro;
+      const matchPrecio  = !precioMax    || Number(p.precio) <= Number(precioMax);
+      return matchSearch && matchMarca && matchGenero && matchPrecio;
     }),
-    [productos, search, marcaFiltro, precioMax]
+    [productos, search, marcaFiltro, generoFiltro, precioMax]
   );
 
-  // Agrupados por marca
   const grupos = useMemo(() => {
     const sinMarca = filtrados.filter(p => !p.marca);
     const conMarca = filtrados.filter(p => p.marca);
@@ -45,7 +43,9 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
     return result;
   }, [filtrados]);
 
-  const hayFiltros = search || marcaFiltro || precioMax;
+  const hayFiltros = search || marcaFiltro || generoFiltro || precioMax;
+
+  const limpiar = () => { setSearch(""); setMarca(""); setGenero(""); setPrecioMax(""); };
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -66,8 +66,7 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
         </div>
 
         {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-10">
-          {/* Búsqueda */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 flex-1">
             <i className="ti ti-search text-gray-400 text-sm" />
             <input value={search} onChange={e => setSearch(e.target.value)}
@@ -80,7 +79,6 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
             )}
           </div>
 
-          {/* Marca */}
           {marcas.length > 0 && (
             <select value={marcaFiltro} onChange={e => setMarca(e.target.value)}
               className="border border-[#D0D0D0] px-4 py-2.5 text-sm text-[#444] bg-white outline-none focus:border-[#1B1B1B] transition-colors">
@@ -89,7 +87,16 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
             </select>
           )}
 
-          {/* Precio máximo */}
+          {conFiltroGenero && (
+            <select value={generoFiltro} onChange={e => setGenero(e.target.value)}
+              className="border border-[#D0D0D0] px-4 py-2.5 text-sm text-[#444] bg-white outline-none focus:border-[#1B1B1B] transition-colors">
+              <option value="">Todos los géneros</option>
+              <option value="Hombre">Hombre</option>
+              <option value="Mujer">Mujer</option>
+              <option value="Unisex">Unisex</option>
+            </select>
+          )}
+
           {maxPrecio > 0 && (
             <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 min-w-[200px]">
               <i className="ti ti-currency-dollar text-gray-400 text-sm" />
@@ -105,16 +112,27 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
             </div>
           )}
 
-          {/* Limpiar */}
           {hayFiltros && (
-            <button onClick={() => { setSearch(""); setMarca(""); setPrecioMax(""); }}
+            <button onClick={limpiar}
               className="border border-[#D0D0D0] px-4 py-2.5 text-[10px] tracking-[2px] uppercase text-gray-500 hover:border-[#1B1B1B] hover:text-[#1B1B1B] transition-colors whitespace-nowrap">
               Limpiar
             </button>
           )}
         </div>
 
-        {/* Chips de marcas */}
+        {/* Chips género */}
+        {conFiltroGenero && (
+          <div className="flex gap-2 flex-wrap mb-4">
+            {["", "Hombre", "Mujer", "Unisex"].map((g) => (
+              <button key={g} onClick={() => setGenero(g)}
+                className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${generoFiltro === g ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
+                {g === "" ? "Todos" : g}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Chips marcas */}
         {marcas.length > 0 && (
           <div className="flex gap-2 flex-wrap mb-10">
             <button onClick={() => setMarca("")}
@@ -147,8 +165,7 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
               {productos.length === 0 ? "Próximamente" : "No se encontraron productos"}
             </p>
             {hayFiltros && (
-              <button onClick={() => { setSearch(""); setMarca(""); setPrecioMax(""); }}
-                className="text-[11px] tracking-[2px] uppercase text-[#1B1B1B] underline">
+              <button onClick={limpiar} className="text-[11px] tracking-[2px] uppercase text-[#1B1B1B] underline">
                 Limpiar filtros
               </button>
             )}

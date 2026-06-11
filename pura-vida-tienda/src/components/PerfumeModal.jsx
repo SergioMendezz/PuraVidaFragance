@@ -19,6 +19,7 @@ export default function PerfumeModal({ perfume, onClose }) {
   const completos      = perfume.variantes?.filter(v => v.tipo === "Completo") ?? [];
   const decants        = perfume.variantes?.filter(v => v.tipo === "Decant")   ?? [];
   const notasOrdenadas = [...(perfume.notas ?? [])].sort((a, b) => b.intensidad - a.intensidad);
+  const maxIntensidad  = notasOrdenadas.length > 0 ? notasOrdenadas[0].intensidad : 10;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
@@ -29,7 +30,10 @@ export default function PerfumeModal({ perfume, onClose }) {
         <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-[#EBEBEB]">
           <div>
             <p className="text-xs text-gray-400 mb-1">{perfume.marca}</p>
-            <h2 className="text-2xl font-light text-[#1B1B1B] tracking-wide">{perfume.nombre}</h2>
+            <h2 className="text-2xl font-light text-[#1B1B1B] tracking-wide"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              {perfume.nombre}
+            </h2>
             <span className="inline-block mt-2 text-xs border border-[#EBEBEB] px-3 py-1 text-gray-500">
               {perfume.genero}
             </span>
@@ -46,21 +50,32 @@ export default function PerfumeModal({ perfume, onClose }) {
             <p className="text-sm text-gray-500 leading-relaxed">{perfume.descripcion}</p>
           )}
 
-          {/* Notas aromáticas */}
+          {/* Notas aromáticas — escala relativa al máximo */}
           {notasOrdenadas.length > 0 && (
             <div>
               <p className="text-xs font-medium text-[#1B1B1B] mb-3">Notas aromáticas</p>
               <div className="space-y-2.5">
-                {notasOrdenadas.map((n) => (
-                  <div key={n.nombre} className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: n.colorHex }} />
-                    <span className="text-sm text-gray-600 w-24">{n.nombre}</span>
-                    <div className="flex-1 h-1 bg-[#F0F0F0]">
-                      <div className="h-full rounded-full" style={{ width: `${(n.intensidad / 10) * 100}%`, backgroundColor: n.colorHex }} />
+                {notasOrdenadas.map((n) => {
+                  const pct = Math.round((n.intensidad / maxIntensidad) * 100);
+                  return (
+                    <div key={n.nombre} className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0 border border-white/50"
+                        style={{ backgroundColor: n.colorHex }} />
+                      <span className="text-sm text-gray-600 w-24 flex-shrink-0">{n.nombre}</span>
+                      <div className="flex-1 h-1.5 bg-[#F0F0F0] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%`, backgroundColor: n.colorHex }} />
+                      </div>
+                      <span className="text-xs text-gray-400 w-8 text-right flex-shrink-0">
+                        {n.intensidad}/10
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-400 w-6 text-right">{n.intensidad}</span>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+              <div className="flex justify-between mt-2 pt-2 border-t border-[#F0F0F0]">
+                <span className="text-[10px] text-gray-400">menos presente</span>
+                <span className="text-[10px] text-gray-400">más presente</span>
               </div>
             </div>
           )}
@@ -72,10 +87,7 @@ export default function PerfumeModal({ perfume, onClose }) {
               <div className="space-y-2">
                 {completos.map((v) => (
                   <div key={v.id} className="flex items-center justify-between border border-[#EBEBEB] px-4 py-3 hover:border-[#1B1B1B] transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-[#1B1B1B]">{v.mililitros}ml</p>
-                      
-                    </div>
+                    <p className="text-sm font-medium text-[#1B1B1B]">{v.mililitros}ml</p>
                     <div className="flex items-center gap-4">
                       <p className="text-base font-medium text-[#1B1B1B]">₡{Number(v.precio).toLocaleString()}</p>
                       <a href={buildWaUrl(perfume, v)} target="_blank" rel="noreferrer"
@@ -99,10 +111,7 @@ export default function PerfumeModal({ perfume, onClose }) {
               <div className="space-y-2">
                 {decants.map((v) => (
                   <div key={v.id} className="flex items-center justify-between border border-[#EBEBEB] px-4 py-3 hover:border-[#1B1B1B] transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-[#1B1B1B]">{v.mililitros}ml</p>
-                      
-                    </div>
+                    <p className="text-sm font-medium text-[#1B1B1B]">{v.mililitros}ml</p>
                     <div className="flex items-center gap-4">
                       <p className="text-base font-medium text-[#1B1B1B]">₡{Number(v.precio).toLocaleString()}</p>
                       <a href={buildWaUrl(perfume, v)} target="_blank" rel="noreferrer"
