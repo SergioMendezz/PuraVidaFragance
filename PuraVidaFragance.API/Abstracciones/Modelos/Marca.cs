@@ -19,6 +19,7 @@ namespace Abstracciones.Modelos
     {
         public Guid Id { get; set; }
         public bool Activo { get; set; }
+
     }
 }
 

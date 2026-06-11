@@ -30,5 +30,6 @@ namespace Abstracciones.Modelos
         public Guid Id { get; set; }
         public string? Marca { get; set; }
         public string? NombrePerfumeBase { get; set; }
+        public bool Activo { get; set; }
     }
 }

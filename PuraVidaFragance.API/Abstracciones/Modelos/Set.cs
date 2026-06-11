@@ -26,6 +26,7 @@ namespace Abstracciones.Modelos
     {
         public Guid Id { get; set; }
         public string? Marca { get; set; }
+        public bool Activo { get; set; }
         public List<ItemSetResponse> Items { get; set; } = new();
     }
 
