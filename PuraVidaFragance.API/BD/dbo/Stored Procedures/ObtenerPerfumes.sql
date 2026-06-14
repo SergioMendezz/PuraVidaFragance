@@ -1,16 +1,11 @@
-﻿-- =============================================
--- Author:		<Author,,Name>
--- Create date: <Create Date,,>
--- Description:	<Description,,>
--- =============================================
-CREATE PROCEDURE [dbo].[ObtenerPerfumes]
+﻿
+CREATE PROCEDURE ObtenerPerfumes
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        p.Id, p.IdMarca, p.Nombre, p.Genero, p.Descripcion, p.ImagenUrl,
-        m.Nombre AS Marca
+    SELECT p.Id, p.Nombre, p.Descripcion, p.Genero, p.ImagenUrl, p.Activo,
+           m.Nombre AS Marca, m.Id AS IdMarca
     FROM Perfumes p
-    INNER JOIN Marcas m ON p.IdMarca = m.Id
-    WHERE p.Activo = 1;
+    LEFT JOIN Marcas m ON p.IdMarca = m.Id
+    ORDER BY p.Nombre;
 END

@@ -3,6 +3,7 @@
     [IdPerfume]  UNIQUEIDENTIFIER NOT NULL,
     [IdNota]     UNIQUEIDENTIFIER NOT NULL,
     [Intensidad] INT              NOT NULL,
+    [Activo]     BIT              DEFAULT ((1)) NOT NULL,
     PRIMARY KEY CLUSTERED ([Id] ASC),
     CONSTRAINT [CHK_NotasPerfume_Int] CHECK ([Intensidad]>=(1) AND [Intensidad]<=(10)),
     CONSTRAINT [FK_NotasPerfume_Nota] FOREIGN KEY ([IdNota]) REFERENCES [dbo].[Notas] ([Id]),

@@ -1,15 +1,8 @@
-﻿-- =============================================
--- Author:		<Author,,Name>
--- Create date: <Create Date,,>
--- Description:	<Description,,>
--- =============================================
+﻿
 CREATE PROCEDURE AgregarVariante
-    @Id         UNIQUEIDENTIFIER,
-    @IdPerfume  UNIQUEIDENTIFIER,
-    @Tipo       VARCHAR(10),
-    @Mililitros DECIMAL(6,2),
-    @Precio     DECIMAL(10,2),
-    @Stock      INT
+    @Id UNIQUEIDENTIFIER, @IdPerfume UNIQUEIDENTIFIER,
+    @Tipo VARCHAR(10), @Mililitros DECIMAL(6,2),
+    @Precio DECIMAL(10,2), @Stock INT
 AS
 BEGIN
     SET NOCOUNT ON;

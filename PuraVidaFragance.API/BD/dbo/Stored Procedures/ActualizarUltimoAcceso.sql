@@ -1,0 +1,8 @@
+﻿
+CREATE PROCEDURE ActualizarUltimoAcceso
+    @Id UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Usuarios SET UltimoAcceso = GETDATE() WHERE Id = @Id;
+END

@@ -1,13 +1,7 @@
-﻿-- =============================================
--- Author:		<Author,,Name>
--- Create date: <Create Date,,>
--- Description:	<Description,,>
--- =============================================
+﻿
 CREATE PROCEDURE AgregarNotaAPerfume
-    @Id         UNIQUEIDENTIFIER,
-    @IdPerfume  UNIQUEIDENTIFIER,
-    @IdNota     UNIQUEIDENTIFIER,
-    @Intensidad INT
+    @Id UNIQUEIDENTIFIER, @IdPerfume UNIQUEIDENTIFIER,
+    @IdNota UNIQUEIDENTIFIER, @Intensidad INT
 AS
 BEGIN
     SET NOCOUNT ON;

@@ -1,11 +1,11 @@
 ﻿
-CREATE PROCEDURE EliminarMarca
+CREATE PROCEDURE ActivarBodySpray
     @Id UNIQUEIDENTIFIER
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRANSACTION
-        UPDATE Marcas SET Activo=0 WHERE Id=@Id;
+        UPDATE BodySprays SET Activo=1 WHERE Id=@Id;
         SELECT @Id;
     COMMIT TRANSACTION
 END
