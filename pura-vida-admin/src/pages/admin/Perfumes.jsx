@@ -134,16 +134,20 @@ export default function Perfumes() {
 
   // ── Notas ──
   const handleAgregarNota = async () => {
-    if (!notaForm.idNota || !perfumeId) return;
-    setSavingNota(true);
-    try {
-      await postNotaAPerfume({ idPerfume: perfumeId, idNota: notaForm.idNota, intensidad: parseInt(notaForm.intensidad) });
-      const res = await getNotasPorPerfume(perfumeId);
-      setNotasPerfume(Array.isArray(res.data) ? res.data : []);
-      await load();
-    } catch { }
-    finally { setSavingNota(false); }
-  };
+  if (!notaForm.idNota || !perfumeId) return;
+  setSavingNota(true);
+  try {
+    await postNotaAPerfume({ idPerfume: perfumeId, idNota: notaForm.idNota, intensidad: parseInt(notaForm.intensidad) });
+    const res = await getNotasPorPerfume(perfumeId);
+    const nuevasNotas = Array.isArray(res.data) ? res.data : [];
+    setNotasPerfume(nuevasNotas);
+    // Seleccionar automáticamente la siguiente nota disponible
+    const disponibles = notasCatalogo.filter(n => n.activo && !nuevasNotas.some(np => np.idNota === n.id));
+    setNotaForm({ idNota: disponibles[0]?.id ?? "", intensidad: 5 });
+    await load();
+  } catch { }
+  finally { setSavingNota(false); }
+};
 
   const handleEliminarNota = async (idNota) => {
     if (!perfumeId) return;
