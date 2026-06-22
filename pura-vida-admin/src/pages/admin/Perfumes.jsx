@@ -161,23 +161,25 @@ export default function Perfumes() {
 
   // ── Variantes en modal ──
   const handleAgregarVariante = async () => {
-    if (!perfumeId || !varianteForm.mililitros || !varianteForm.precio) return;
-    setSavingVariante(true);
-    try {
-      await postVariante({
-        idPerfume: perfumeId,
-        tipo:       varianteForm.tipo,
-        mililitros: parseFloat(varianteForm.mililitros),
-        precio:     parseFloat(varianteForm.precio),
-        stock:      parseInt(varianteForm.stock || 0),
-      });
-      const res = await getVariantesPorPerfume(perfumeId);
-      setVariantesPerfume(Array.isArray(res.data) ? res.data : []);
-      setVarianteForm(emptyVariante);
-      await load();
-    } catch { }
-    finally { setSavingVariante(false); }
-  };
+  if (!perfumeId || !varianteForm.mililitros || !varianteForm.precio) return;
+  setSavingVariante(true);
+  try {
+    await postVariante({
+      idPerfume:  perfumeId,
+      tipo:       varianteForm.tipo,
+      mililitros: parseFloat(varianteForm.mililitros),
+      precio:     parseFloat(varianteForm.precio),
+      stock:      parseInt(varianteForm.stock || "0"),
+    });
+    const res = await getVariantesPorPerfume(perfumeId);
+    setVariantesPerfume(Array.isArray(res.data) ? res.data : []);
+    setVarianteForm(emptyVariante);
+    await load();
+  } catch (err) {
+    console.error("Error al agregar variante:", err);
+  }
+  finally { setSavingVariante(false); }
+};
 
   const handleEliminarVariante = async (idVariante) => {
     if (!perfumeId) return;
