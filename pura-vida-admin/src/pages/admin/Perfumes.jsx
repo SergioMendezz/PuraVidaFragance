@@ -512,12 +512,10 @@ export default function Perfumes() {
               </div>
 
               <div className="flex gap-3 pt-2 border-t border-[#EBEBEB]">
-                {!editing && (
-                  <button type="button" onClick={() => setPaso(1)}
-                    className="border border-[#EBEBEB] px-4 py-2.5 text-xs tracking-widest uppercase text-gray-500 hover:bg-gray-50 transition-all">
-                    ← Editar datos
-                  </button>
-                )}
+                <button type="button" onClick={() => setPaso(1)}
+                className="border border-[#EBEBEB] px-4 py-2.5 text-xs tracking-widest uppercase text-gray-500 hover:bg-gray-50 transition-all">
+                ← Editar datos
+                </button>
                 <button type="button" onClick={closeModal}
                   className="flex-1 bg-[#1B1B1B] text-white py-2.5 text-xs tracking-widest uppercase hover:bg-black transition-all">
                   Listo
