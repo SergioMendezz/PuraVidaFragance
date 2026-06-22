@@ -51,7 +51,7 @@ namespace API.Controllers
         public async Task<IActionResult> Agregar([FromBody] PerfumeRequest perfume)
         {
             var resultado = await _perfumeFlujo.Agregar(perfume);
-            return CreatedAtAction(nameof(Obtener), new { Id = resultado }, null);
+            return Ok(resultado);
         }
 
         [HttpPut("{Id}")]

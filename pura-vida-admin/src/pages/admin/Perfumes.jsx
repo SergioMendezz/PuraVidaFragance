@@ -109,18 +109,7 @@ export default function Perfumes() {
       setPerfumeId(editing.id);
     } else {
       const res = await postPerfume(form);
-      console.log("res completo:", res);
-      console.log("res.data:", res.data);
-      console.log("res.headers:", res.headers);
-      
-      let nuevoId = null;
-      if (res.data) {
-        nuevoId = res.data;
-      } else if (res.headers?.location) {
-        nuevoId = res.headers.location.split("/").pop();
-      }
-      
-      console.log("nuevoId:", nuevoId);
+      const nuevoId = res.data;
       setPerfumeId(nuevoId);
       setNotasPerfume([]);
       setVariantesPerfume([]);
