@@ -102,26 +102,35 @@ export default function Perfumes() {
 
   // ── Guardar datos básicos del perfume (paso 1) ──
   const handleSavePerfume = async (e) => {
-    e.preventDefault(); setSaving(true); setError("");
-    try {
-      if (editing) {
-        await putPerfume(editing.id, form);
-        setPerfumeId(editing.id);
-      } else {
-        const res = await postPerfume(form);
-        // La API devuelve el ID del perfume creado
-        const nuevoId = res.data ?? res.headers?.location?.split("/").pop();
-        setPerfumeId(nuevoId);
-        // Cargar notas del nuevo perfume (vacías) y variantes
-        setNotasPerfume([]);
-        setVariantesPerfume([]);
-        setNotaForm({ idNota: notasCatalogo.find(n => n.activo)?.id ?? "", intensidad: 5 });
+  e.preventDefault(); setSaving(true); setError("");
+  try {
+    if (editing) {
+      await putPerfume(editing.id, form);
+      setPerfumeId(editing.id);
+    } else {
+      const res = await postPerfume(form);
+      console.log("res completo:", res);
+      console.log("res.data:", res.data);
+      console.log("res.headers:", res.headers);
+      
+      let nuevoId = null;
+      if (res.data) {
+        nuevoId = res.data;
+      } else if (res.headers?.location) {
+        nuevoId = res.headers.location.split("/").pop();
       }
-      await load();
-      setPaso(2);
-    } catch (err) { setError(err.response?.data ?? "Error al guardar"); }
-    finally { setSaving(false); }
-  };
+      
+      console.log("nuevoId:", nuevoId);
+      setPerfumeId(nuevoId);
+      setNotasPerfume([]);
+      setVariantesPerfume([]);
+      setNotaForm({ idNota: notasCatalogo.find(n => n.activo)?.id ?? "", intensidad: 5 });
+    }
+    await load();
+    setPaso(2);
+  } catch (err) { setError(err.response?.data ?? "Error al guardar"); }
+  finally { setSaving(false); }
+};
 
   // ── Toggle activo/inactivo ──
   const handleToggle = async (p) => {
