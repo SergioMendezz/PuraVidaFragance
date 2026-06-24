@@ -54,7 +54,7 @@ export default function SetModal({ set, onClose }) {
                       {item.tipoProducto}
                     </span>
                     <span className="text-sm text-[#1B1B1B] flex-1">
-                      {item.nombreItem ?? item.tipoProducto}
+                      {item.nombreItem || item.nombreProducto || item.tipoProducto}
                     </span>
                     <span className="text-xs text-gray-400">x{item.cantidad}</span>
                   </div>
