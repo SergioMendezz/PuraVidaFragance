@@ -50,5 +50,6 @@ namespace Abstracciones.Modelos
     {
         public Guid Id { get; set; }
         public Guid IdSet { get; set; }
+        public string? NombreProducto { get; set; }
     }
 }
