@@ -91,7 +91,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
         policy.WithOrigins(
             "https://pura-vida-tienda.vercel.app",
-            "https://pura-vida-admin.vercel.app"
+            "https://pura-vida-admin.vercel.app",
+            "https://proud-ocean-07db5d210.7.azurestaticapps.net",
+            "https://agreeable-bay-00d83e010.7.azurestaticapps.net"
+
         )
         .AllowAnyHeader()
         .AllowAnyMethod());
