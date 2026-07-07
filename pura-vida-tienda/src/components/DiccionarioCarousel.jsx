@@ -11,7 +11,7 @@ import icono from "../assets/icono.png";
 
 // Perfumes Nicho — 3 fotos. Sugerencia: Le Labo Santal 33,
 // Nishane / Erba Pura (frasco turquesa), Parfums de Marly (frasco azul).
-const IMG_NICHO ="https://res.cloudinary.com/ddk3il6zx/image/upload/v1783461773/Xerjoff_ErbaPura_mbedga.jpg";
+const IMG_NICHO = ["https://res.cloudinary.com/ddk3il6zx/image/upload/v1783461773/Xerjoff_ErbaPura_mbedga.jpg", "", ""];
 
 // Perfumes de Diseñador — 3 fotos. Sugerencia: Jean Paul Gaultier
 // Le Male, Armani Stronger With You Intensely, Dior Sauvage.
