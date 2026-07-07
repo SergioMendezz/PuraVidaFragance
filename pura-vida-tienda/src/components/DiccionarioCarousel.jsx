@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import icono from "../assets/icono.png";
 
 /* ============================================================
@@ -47,7 +47,7 @@ function ImgCelda({ src, alt, className }) {
 
 function SlidePortada() {
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center px-8 py-12">
+    <div className="min-h-[280px] flex flex-col items-center justify-center text-center px-8 py-12">
       <img src={icono} alt="Pura Vida Fragance" className="w-32 md:w-40 mb-8 object-contain" />
       <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-3"
         style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -74,7 +74,7 @@ function ImagenesCategoria({ imagenes, alt, className }) {
 
 function SlideCategoria({ titulo, bullets, imagenes, alt }) {
   return (
-    <div className="h-full grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[280px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div className="flex flex-col justify-center">
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -101,7 +101,7 @@ function SlideDecant() {
     "Coleccionar y conocer variedad de aromas a una fracción de su costo.",
   ];
   return (
-    <div className="h-full grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[280px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div className="flex flex-col justify-center">
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-4"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -133,7 +133,7 @@ function SlideNotas() {
     { label: "Notas de Fondo", color: "#7A5230", texto: "La base del perfume. Son las esencias más pesadas que fijan el aroma y perduran por días en ropa o piel." },
   ];
   return (
-    <div className="h-full grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[280px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div className="flex flex-col justify-center">
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -189,7 +189,7 @@ function SlideConcentraciones() {
     { pct: 5, rango: "1-3%", nombreCorto: "Fraiche", nombreLargo: "Eau De Fraiche" },
   ];
   return (
-    <div className="h-full flex flex-col items-center justify-center px-8 py-10 text-center">
+    <div className="min-h-[280px] flex flex-col items-center justify-center px-8 py-10 text-center">
       <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-10"
         style={{ fontFamily: "'Cormorant Garamond', serif" }}>
         Concentraciones de Perfume
@@ -235,6 +235,8 @@ const slides = [
 export default function DiccionarioCarousel() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [altura, setAltura] = useState(null);
+  const slideRefs = useRef([]);
   const total = slides.length;
 
   useEffect(() => {
@@ -242,6 +244,16 @@ export default function DiccionarioCarousel() {
     const t = setInterval(() => setIndex(i => (i + 1) % total), 6000);
     return () => clearInterval(t);
   }, [paused, total]);
+
+  useEffect(() => {
+    const medir = () => {
+      const el = slideRefs.current[index];
+      if (el) setAltura(el.scrollHeight);
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    return () => window.removeEventListener("resize", medir);
+  }, [index]);
 
   const ir = (i) => setIndex(((i % total) + total) % total);
 
@@ -258,11 +270,12 @@ export default function DiccionarioCarousel() {
         </h2>
       </div>
 
-      <div className="relative border border-[#EBEBEB] overflow-hidden h-[380px] md:h-[400px]">
-        <div className="flex h-full transition-transform duration-700 ease-in-out"
+      <div className="relative border border-[#EBEBEB] overflow-hidden transition-[height] duration-300 ease-in-out"
+        style={{ height: altura ? `${altura}px` : "auto" }}>
+        <div className="flex transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${index * 100}%)` }}>
           {slides.map((slide, i) => (
-            <div key={i} className="w-full h-full flex-shrink-0 overflow-hidden">
+            <div key={i} ref={(el) => { slideRefs.current[i] = el; }} className="w-full flex-shrink-0">
               {slide}
             </div>
           ))}
