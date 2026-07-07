@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import FloatingButtons from "../components/FloatingButtons";
+import DiccionarioCarousel from "../components/DiccionarioCarousel";
 import logo from "../assets/logo.png";
 
 const categorias = [
@@ -30,6 +31,9 @@ export default function Inicio() {
           <i className="ti ti-chevron-down text-lg" />
         </button>
       </section>
+
+      {/* Diccionario de la perfumería */}
+      <DiccionarioCarousel />
 
       {/* Categorías */}
       <section className="max-w-6xl mx-auto px-6 pb-24">
