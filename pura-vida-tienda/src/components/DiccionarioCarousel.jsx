@@ -74,7 +74,7 @@ function ImagenesCategoria({ imagenes, alt, className }) {
 
 function SlideCategoria({ titulo, bullets, imagenes, alt }) {
   return (
-    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div>
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -101,7 +101,7 @@ function SlideDecant() {
     "Coleccionar y conocer variedad de aromas a una fracción de su costo.",
   ];
   return (
-    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div>
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-4"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -133,7 +133,7 @@ function SlideNotas() {
     { label: "Notas de Fondo", color: "#7A5230", texto: "La base del perfume. Son las esencias más pesadas que fijan el aroma y perduran por días en ropa o piel." },
   ];
   return (
-    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch content-stretch px-8 py-10 md:px-14">
       <div>
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
