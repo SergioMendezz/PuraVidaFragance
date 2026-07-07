@@ -9,9 +9,10 @@ import icono from "../assets/icono.png";
    nada: ya usa tu archivo assets/icono.png.
    ============================================================ */
 
-// Perfumes Nicho — 3 fotos. Sugerencia: Le Labo Santal 33,
-// Nishane / Erba Pura (frasco turquesa), Parfums de Marly (frasco azul).
-const IMG_NICHO = ["https://res.cloudinary.com/ddk3il6zx/image/upload/v1783461773/Xerjoff_ErbaPura_mbedga.jpg", "", ""];
+// Perfumes Nicho — 1 foto (por ahora solo tenés Xerjoff Erba Pura).
+// Si más adelante agregás más marcas de nicho, convertí esto en un
+// arreglo (["url1","url2","url3"]) y la diapositiva se acomoda sola.
+const IMG_NICHO = "https://res.cloudinary.com/ddk3il6zx/image/upload/v1783461773/Xerjoff_ErbaPura_mbedga.jpg";
 
 // Perfumes de Diseñador — 3 fotos. Sugerencia: Jean Paul Gaultier
 // Le Male, Armani Stronger With You Intensely, Dior Sauvage.
@@ -59,26 +60,36 @@ function SlidePortada() {
   );
 }
 
+function ImagenesCategoria({ imagenes, alt, className }) {
+  const lista = Array.isArray(imagenes) ? imagenes : [imagenes ?? ""];
+  const cols = lista.length === 1 ? "grid-cols-1" : lista.length === 2 ? "grid-cols-2" : "grid-cols-3";
+  return (
+    <div className={`grid ${cols} gap-px bg-[#EBEBEB] ${className}`}>
+      {lista.map((src, i) => (
+        <ImgCelda key={i} src={src} alt={`${alt} ${i + 1}`} className="h-full bg-[#FAFAFA]" />
+      ))}
+    </div>
+  );
+}
+
 function SlideCategoria({ titulo, bullets, imagenes, alt }) {
   return (
-    <div className="min-h-[560px] flex flex-col justify-center px-8 py-10 md:px-14">
-      <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
-        style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-        {titulo}
-      </h3>
-      <ul className="space-y-2.5 mb-8 max-w-xl">
-        {bullets.map((b, i) => (
-          <li key={i} className="flex gap-3 text-sm text-gray-600 leading-relaxed">
-            <span className="text-[#1B1B1B] mt-0.5 flex-shrink-0">—</span>
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="grid grid-cols-3 gap-px bg-[#EBEBEB] max-w-xl">
-        {imagenes.map((src, i) => (
-          <ImgCelda key={i} src={src} alt={`${alt} ${i + 1}`} className="h-28 md:h-36 bg-white" />
-        ))}
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
+      <div>
+        <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
+          style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          {titulo}
+        </h3>
+        <ul className="space-y-2.5">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex gap-3 text-sm text-gray-600 leading-relaxed">
+              <span className="text-[#1B1B1B] mt-0.5 flex-shrink-0">—</span>
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
       </div>
+      <ImagenesCategoria imagenes={imagenes} alt={alt} className="h-64 md:h-full" />
     </div>
   );
 }
@@ -90,7 +101,7 @@ function SlideDecant() {
     "Coleccionar y conocer variedad de aromas a una fracción de su costo.",
   ];
   return (
-    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-center px-8 py-10 md:px-14">
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
       <div>
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-4"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -122,7 +133,7 @@ function SlideNotas() {
     { label: "Notas de Fondo", color: "#7A5230", texto: "La base del perfume. Son las esencias más pesadas que fijan el aroma y perduran por días en ropa o piel." },
   ];
   return (
-    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-center px-8 py-10 md:px-14">
+    <div className="min-h-[560px] grid md:grid-cols-2 gap-10 items-stretch px-8 py-10 md:px-14">
       <div>
         <h3 className="text-3xl md:text-4xl font-light text-[#1B1B1B] tracking-wide mb-6"
           style={{ fontFamily: "'Cormorant Garamond', serif" }}>
