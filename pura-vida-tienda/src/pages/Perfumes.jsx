@@ -29,16 +29,19 @@ export default function Perfumes() {
   const getNotasPrincipales = (p) =>
     [...(Array.isArray(p.notas) ? p.notas : [])].sort((a, b) => b.intensidad - a.intensidad).slice(0, 4);
 
-  // Para el filtro de precio usamos el precio de la variante principal
+  // Para el filtro de precio usamos el precio de la variante principal.
+  // notasPrincipales y tieneDecant alimentan los filtros de "notas aromáticas" y "decant disponible".
   const perfumesConPrecio = perfumes.map(p => ({
     ...p,
     precio: getPrecioMin(p)?.precio ?? 0,
+    notasPrincipales: getNotasPrincipales(p).map(n => n.nombre),
+    tieneDecant: (p.variantes ?? []).some(v => v.tipo === "Decant"),
   }));
 
   const renderTarjeta = (p) => {
     const varPrincipal = getPrecioMin(p);
     const notas = getNotasPrincipales(p);
-    const tieneDecant = (p.variantes ?? []).some(v => v.tipo === "Decant");
+    const tieneDecant = p.tieneDecant;
     const agotado = sinStock(p);
 
     return (
@@ -102,6 +105,8 @@ export default function Perfumes() {
       productos={perfumesConPrecio}
       loading={loading}
       conFiltroGenero={true}
+      conFiltroNotas={true}
+      conFiltroDecant={true}
       renderTarjeta={renderTarjeta}
       renderModal={() => selected && <PerfumeModal perfume={selected} onClose={() => setSelected(null)} />}
     />

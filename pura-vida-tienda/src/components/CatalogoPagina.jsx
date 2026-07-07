@@ -2,16 +2,30 @@ import { useState, useMemo } from "react";
 import Navbar from "./Navbar";
 import FloatingButtons from "./FloatingButtons";
 
-export default function CatalogoPagina({ titulo, subtitulo, productos, loading, renderModal, renderTarjeta, conFiltroGenero = false }) {
+export default function CatalogoPagina({
+  titulo, subtitulo, productos, loading, renderModal, renderTarjeta,
+  conFiltroGenero = false,
+  conFiltroNotas = false, campoNotas = "notasPrincipales",
+  conFiltroDecant = false, campoDecant = "tieneDecant",
+}) {
   const [search, setSearch]         = useState("");
   const [marcaFiltro, setMarca]     = useState("");
   const [generoFiltro, setGenero]   = useState("");
   const [precioMax, setPrecioMax]   = useState("");
+  const [notaFiltro, setNota]       = useState("");
+  const [soloDecant, setSoloDecant] = useState(false);
 
   const marcas = useMemo(() =>
     [...new Map(productos.filter(p => p.marca).map(p => [p.marca, p.marca])).values()].sort(),
     [productos]
   );
+
+  const notas = useMemo(() => {
+    if (!conFiltroNotas) return [];
+    const set = new Set();
+    productos.forEach(p => (p[campoNotas] ?? []).forEach(n => set.add(n)));
+    return [...set].sort();
+  }, [productos, conFiltroNotas, campoNotas]);
 
   const maxPrecio = useMemo(() =>
     productos.length > 0 ? Math.max(...productos.map(p => Number(p.precio))) : 0,
@@ -25,9 +39,11 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
       const matchMarca   = !marcaFiltro  || p.marca === marcaFiltro;
       const matchGenero  = !generoFiltro || p.genero === generoFiltro;
       const matchPrecio  = !precioMax    || Number(p.precio) <= Number(precioMax);
-      return matchSearch && matchMarca && matchGenero && matchPrecio;
+      const matchNota    = !notaFiltro   || (p[campoNotas] ?? []).includes(notaFiltro);
+      const matchDecant  = !soloDecant   || p[campoDecant] === true;
+      return matchSearch && matchMarca && matchGenero && matchPrecio && matchNota && matchDecant;
     }),
-    [productos, search, marcaFiltro, generoFiltro, precioMax]
+    [productos, search, marcaFiltro, generoFiltro, precioMax, notaFiltro, soloDecant, campoNotas, campoDecant]
   );
 
   const grupos = useMemo(() => {
@@ -43,9 +59,9 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
     return result;
   }, [filtrados]);
 
-  const hayFiltros = search || marcaFiltro || generoFiltro || precioMax;
+  const hayFiltros = search || marcaFiltro || generoFiltro || precioMax || notaFiltro || soloDecant;
 
-  const limpiar = () => { setSearch(""); setMarca(""); setGenero(""); setPrecioMax(""); };
+  const limpiar = () => { setSearch(""); setMarca(""); setGenero(""); setPrecioMax(""); setNota(""); setSoloDecant(false); };
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -66,8 +82,8 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
         </div>
 
         {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 flex-1">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 mb-6">
+          <div className="flex items-center gap-3 border border-[#D0D0D0] px-4 py-2.5 flex-1 min-w-[200px]">
             <i className="ti ti-search text-gray-400 text-sm" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder={`Buscar en ${titulo.toLowerCase()}...`}
@@ -84,6 +100,14 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
               className="border border-[#D0D0D0] px-4 py-2.5 text-sm text-[#444] bg-white outline-none focus:border-[#1B1B1B] transition-colors">
               <option value="">Todas las marcas</option>
               {marcas.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          )}
+
+          {conFiltroNotas && notas.length > 0 && (
+            <select value={notaFiltro} onChange={e => setNota(e.target.value)}
+              className="border border-[#D0D0D0] px-4 py-2.5 text-sm text-[#444] bg-white outline-none focus:border-[#1B1B1B] transition-colors">
+              <option value="">Todas las notas</option>
+              {notas.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           )}
 
@@ -120,31 +144,29 @@ export default function CatalogoPagina({ titulo, subtitulo, productos, loading, 
           )}
         </div>
 
-        {/* Chips género */}
-        {conFiltroGenero && (
-          <div className="flex gap-2 flex-wrap mb-4">
-            {["", "Hombre", "Mujer", "Unisex"].map((g) => (
-              <button key={g} onClick={() => setGenero(g)}
-                className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${generoFiltro === g ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
-                {g === "" ? "Todos" : g}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Chips género + decant */}
+        {(conFiltroGenero || conFiltroDecant) && (
+          <div className="space-y-3 mb-10">
+            {conFiltroGenero && (
+              <div className="flex gap-2 flex-wrap">
+                {["", "Hombre", "Mujer", "Unisex"].map((g) => (
+                  <button key={g} onClick={() => setGenero(g)}
+                    className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${generoFiltro === g ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
+                    {g === "" ? "Todos" : g}
+                  </button>
+                ))}
+              </div>
+            )}
 
-        {/* Chips marcas */}
-        {marcas.length > 0 && (
-          <div className="flex gap-2 flex-wrap mb-10">
-            <button onClick={() => setMarca("")}
-              className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${!marcaFiltro ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
-              Todas
-            </button>
-            {marcas.map(m => (
-              <button key={m} onClick={() => setMarca(m === marcaFiltro ? "" : m)}
-                className={`px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${marcaFiltro === m ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
-                {m}
-              </button>
-            ))}
+            {conFiltroDecant && (
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={() => setSoloDecant(v => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] tracking-[2px] uppercase border transition-colors font-medium ${soloDecant ? "bg-[#1B1B1B] text-white border-[#1B1B1B]" : "border-[#C0C0C0] text-[#555] hover:border-[#1B1B1B]"}`}>
+                  <i className="ti ti-flask text-xs" />
+                  Con decant disponible
+                </button>
+              </div>
+            )}
           </div>
         )}
 
