@@ -33,7 +33,7 @@ const IMG_NOTAS = "https://res.cloudinary.com/ddk3il6zx/image/upload/v1783454464
 
 function ImgCelda({ src, alt, className }) {
   return (
-    <div className={`flex items-center justify-center p-4 ${className}`}>
+    <div className={`flex items-center justify-center p-4 min-h-0 overflow-hidden ${className}`}>
       {src ? (
         <img src={src} alt={alt} className="max-h-full max-w-full object-contain" />
       ) : (
@@ -64,7 +64,7 @@ function ImagenesCategoria({ imagenes, alt, className }) {
   const lista = Array.isArray(imagenes) ? imagenes : [imagenes ?? ""];
   const cols = lista.length === 1 ? "grid-cols-1" : lista.length === 2 ? "grid-cols-2" : "grid-cols-3";
   return (
-    <div className={`grid ${cols} gap-px bg-[#EBEBEB] ${className}`}>
+    <div className={`grid ${cols} gap-px bg-[#EBEBEB] min-h-0 overflow-hidden ${className}`}>
       {lista.map((src, i) => (
         <ImgCelda key={i} src={src} alt={`${alt} ${i + 1}`} className="h-full bg-[#FAFAFA]" />
       ))}
