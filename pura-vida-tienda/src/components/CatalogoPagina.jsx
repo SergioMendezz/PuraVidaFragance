@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Navbar from "./Navbar";
 import FloatingButtons from "./FloatingButtons";
+
+const TAMANO_PAGINA = 30;
 
 export default function CatalogoPagina({
   titulo, subtitulo, productos, loading, renderModal, renderTarjeta,
@@ -14,6 +16,13 @@ export default function CatalogoPagina({
   const [precioMax, setPrecioMax]   = useState("");
   const [notaFiltro, setNota]       = useState("");
   const [soloDecant, setSoloDecant] = useState(false);
+  const [visibles, setVisibles]     = useState(TAMANO_PAGINA);
+
+  // Cada vez que cambian los filtros/búsqueda o llega un nuevo set de productos,
+  // volvemos a mostrar solo la primera página para no renderizar todo de golpe.
+  useEffect(() => {
+    setVisibles(TAMANO_PAGINA);
+  }, [search, marcaFiltro, generoFiltro, precioMax, notaFiltro, soloDecant, productos.length]);
 
   const marcas = useMemo(() =>
     [...new Map(productos.filter(p => p.marca).map(p => [p.marca, p.marca])).values()].sort(),
@@ -46,9 +55,13 @@ export default function CatalogoPagina({
     [productos, search, marcaFiltro, generoFiltro, precioMax, notaFiltro, soloDecant, campoNotas, campoDecant]
   );
 
+  // Solo se agrupa (y por lo tanto solo se renderiza) la porción visible según la paginación.
+  const paginados = useMemo(() => filtrados.slice(0, visibles), [filtrados, visibles]);
+  const hayMas = visibles < filtrados.length;
+
   const grupos = useMemo(() => {
-    const sinMarca = filtrados.filter(p => !p.marca);
-    const conMarca = filtrados.filter(p => p.marca);
+    const sinMarca = paginados.filter(p => !p.marca);
+    const conMarca = paginados.filter(p => p.marca);
     const map = new Map();
     conMarca.forEach(p => {
       if (!map.has(p.marca)) map.set(p.marca, []);
@@ -57,7 +70,7 @@ export default function CatalogoPagina({
     const result = [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([marca, items]) => ({ marca, items }));
     if (sinMarca.length > 0) result.push({ marca: null, items: sinMarca });
     return result;
-  }, [filtrados]);
+  }, [paginados]);
 
   const hayFiltros = search || marcaFiltro || generoFiltro || precioMax || notaFiltro || soloDecant;
 
@@ -208,6 +221,18 @@ export default function CatalogoPagina({
                 </div>
               </div>
             ))}
+
+            {hayMas && (
+              <div className="flex flex-col items-center gap-3 pt-4">
+                <p className="text-[11px] text-gray-400">
+                  Mostrando {paginados.length} de {filtrados.length} productos
+                </p>
+                <button onClick={() => setVisibles(v => v + TAMANO_PAGINA)}
+                  className="border border-[#D0D0D0] px-8 py-3 text-[10px] tracking-[3px] uppercase text-[#1B1B1B] hover:bg-[#1B1B1B] hover:text-white hover:border-[#1B1B1B] transition-colors">
+                  Cargar más
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
