@@ -55,9 +55,17 @@ export default function CatalogoPagina({
     [productos, search, marcaFiltro, generoFiltro, precioMax, notaFiltro, soloDecant, campoNotas, campoDecant]
   );
 
-  // Solo se agrupa (y por lo tanto solo se renderiza) la porción visible según la paginación.
-  const paginados = useMemo(() => filtrados.slice(0, visibles), [filtrados, visibles]);
-  const hayMas = visibles < filtrados.length;
+  // Ordenamos por marca ANTES de paginar (no después), así "cargar más" siempre
+  // completa el grupo que ya estaba al final o agrega grupos nuevos abajo,
+  // nunca inserta una marca nueva en medio de lo que el cliente ya vio.
+  const filtradosOrdenados = useMemo(() => {
+    const conMarca = filtrados.filter(p => p.marca).sort((a, b) => a.marca.localeCompare(b.marca));
+    const sinMarca = filtrados.filter(p => !p.marca);
+    return [...conMarca, ...sinMarca];
+  }, [filtrados]);
+
+  const paginados = useMemo(() => filtradosOrdenados.slice(0, visibles), [filtradosOrdenados, visibles]);
+  const hayMas = visibles < filtradosOrdenados.length;
 
   const grupos = useMemo(() => {
     const sinMarca = paginados.filter(p => !p.marca);
@@ -67,7 +75,9 @@ export default function CatalogoPagina({
       if (!map.has(p.marca)) map.set(p.marca, []);
       map.get(p.marca).push(p);
     });
-    const result = [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([marca, items]) => ({ marca, items }));
+    // Ya vienen ordenados por marca desde filtradosOrdenados, así que el orden
+    // de inserción del Map ya es el correcto (no hace falta volver a ordenar).
+    const result = [...map.entries()].map(([marca, items]) => ({ marca, items }));
     if (sinMarca.length > 0) result.push({ marca: null, items: sinMarca });
     return result;
   }, [paginados]);
